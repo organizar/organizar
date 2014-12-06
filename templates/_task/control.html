@@ -1,0 +1,36 @@
+{% extends "base/base.html" %}
+
+{% block content %}
+	<div id="content">
+		<h2>Menü</h2>
+		<div class="menu">
+			<ul>
+				<li>
+					<a href="/handle_todo/" class="button ajax show_in_overlay" data-divclassorid="#content">
+						+
+					</a>
+				</li>
+			</ul>
+		</div>
+		
+		<h2>Aufgaben</h2>
+		<div class="tasks-wrapper clearfix">
+			<div class="tasks open">
+				{% for task in tasks %}
+					{% if not task.done %}
+						{% include "_task/single_task.html" %}
+					{% endif %}
+				{% endfor %}
+			</div>
+			<div class="tasks done">
+				{% for task in tasks %}
+					{% if task.done %}
+						{% include "_task/single_task.html" %}
+					{% endif %}
+				{% endfor %}
+			</div>
+		</div>
+	</div>
+{% endblock %}
+
+

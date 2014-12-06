@@ -1,0 +1,107 @@
+{% extends "base/base.html" %}
+
+{% block content %}
+	<h2>Neuer Vertrag</h2>
+	<a class="button ajax show_in_overlay" data-divclassorid="#page" target="_blank" data-callback="handle_contract" href="/contract/new/">+</a>
+	<h2>Aktive Verträge</h2>
+	{% if contracts %}
+		<div class="object-box-wrapper">
+		{% for contract in contracts %}
+			<div class="box deletable">
+				<div class="header green">
+					<div class="menu">
+						<ul>
+							<li><a class="button" target="_blank" href="/print_contract/{{ contract.id }}/"><img src="/media/img/print.png" alt=""/></a></li>
+							<li><a class="button ajax show_in_overlay" data-divclassorid="#page" href="/contract/{{ contract.id }}/"><img src="/media/img/edit.png" alt=""/></a></li>
+							<li><a class="button ajax delete" href="/delete_contract/{{ contract.id }}/"><img src="/media/img/delete.png" alt=""/></a></li>
+						</ul>
+					</div>
+					<div class="right">
+						{{ contract.number }}
+					</div>
+					
+				
+				</div>
+				<dl class="content">
+					<dd>Typ: {{ contract.type }}</dd>
+					<dd>Beginn: {{ contract.start_date }}</dd>
+					<dd>Ende: {{ contract.end_date }}</dd>
+					<dd>Teilnehmer: {{ contract.contact }}</dd>
+					<dd>Vertragspartner: {{ contract.billing_contact }}</dd>
+					<dd>Rabatt: {{ contract.discount }}</dd>
+					<dd>Preis: {{ contract.calc_price }}</dd>
+					<dd>{% if contract.with_tax %} mit Mehrwertsteuer {% else %} ohne Mehrwertsteuer {% endif %}</dd>
+
+					{% if contract.pdfs %}
+						<dd>
+							PDFs:
+							<ul>
+								{% for pdf in contract.pdfs %}
+									<li><a target="_blank" href="{{ pdf.path }}">{{ pdf.name }}</a></li>
+								{% endfor %}
+							</ul>
+						</dd>
+					{% endif %}
+				</dl>
+			</div>
+		{% endfor %}
+		</div>
+	{% else %}
+		<p>keine Verträge gefunden</p>
+	{% endif %}
+
+	
+	<br/><br/>
+	<h2>Abgelaufene Verträge</h2>
+	
+	{% if old_contracts %}
+		<div class="object-box-wrapper">
+		{% for contract in old_contracts %}
+			<div class="box">
+				<div class="header red">
+					<div class="menu">
+						<ul>
+							<li><a class="button" target="_blank" href="/print_contract/{{ contract.id }}/"><img src="/media/img/print.png" alt=""/></a></li>
+							<li><a class="button ajax show_in_overlay" data-divclassorid="#page" href="/contract/{{ contract.id }}/"><img src="/media/img/edit.png" alt=""/></a></li>
+							<li><a class="button ajax delete" href="/delete_contract/{{ contract.id }}/"><img src="/media/img/delete.png" alt=""/></a></li>
+						</ul>
+					</div>
+					<div class="right">
+						{{ contract.number }}
+					</div>
+					
+				
+				</div>
+				<dl class="content">
+					<dd>Typ: {{ contract.type }}</dd>
+					<dd>Beginn: {{ contract.start_date }}</dd>
+					<dd>Ende: {{ contract.end_date }}</dd>
+					<dd>Teilnehmer: {{ contract.contact }}</dd>
+					<dd>Vertragspartner: {{ contract.billing_contact }}</dd>
+					<dd>Rabatt: {{ contract.discount }}</dd>
+					<dd>Preis: {{ contract.calc_price }}</dd>
+					<dd>{% if contract.with_tax %} mit Mehrwertsteuer {% else %} ohne Mehrwertsteuer {% endif %}</dd>
+		
+					{% if contract.pdfs %}
+						<dd>
+							PDFs:
+							<ul>
+								{% for pdf in contract.pdfs %}
+									<li><a target="_blank" href="{{ pdf.path }}">{{ pdf.name }}</a></li>
+								{% endfor %}
+							</ul>
+						</dd>
+					{% endif %}
+				</dl>
+			</div>
+		{% endfor %}
+		</div>
+	{% else %}
+		<p>keine Verträge gefunden</p>
+	{% endif %}
+
+{% endblock %}
+
+{% block list %}
+
+{% endblock %}

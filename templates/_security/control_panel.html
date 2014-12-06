@@ -1,0 +1,20 @@
+{% extends "base/base.html" %}
+
+{% block content %}
+	<div id="content">
+		<h2>Kontrollzentrum</h2>
+		
+		<h4>Statusinformationen</h4>
+		<p>Hier finden Sie Informationen bezüglich des Systems. 
+		<dl>
+			<dt>Anzahl an Benutzern</dt>
+			<dd>{{ all_users | length }}</dd>
+			<dt>Anzahl an Stunden</dt>
+			<dd>{{ all_events | length }}</dd>
+			<dt>Anzahl an Verträgen</dt>
+			<dd>{{ all_contracts | length }}</dd>
+		</dl>
+	</div>
+{% endblock %}
+
+

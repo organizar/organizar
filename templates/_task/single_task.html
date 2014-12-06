@@ -1,0 +1,28 @@
+	<div class="task deletable">
+		<div class="status {% if task.done %}green{% else %}red{% endif %}">
+		
+			<div class="menu">
+				<ul>
+					<li>
+						<a class="button ajax show_in_overlay" data-divclassorid="#content" href="/handle_todo/{{ task.id }}/">
+							<img src="/media/img/edit.png" alt="edit"/>
+						</a>
+					</li>
+					<li>
+						<a class="button ajax delete" href="/delete_todo/{{ task.id }}/">
+							<img src="/media/img/delete.png" alt="delete"/>
+						</a>
+					</li>
+				</ul>
+			</div>
+			<div class="priority">
+				{{ task.priority }}
+			</div>
+			<div class="category">
+				{{ task.category }}
+			</div>
+		</div>
+		<div class="content">
+			{{ task.text }}
+		</div>	
+	</div>
