@@ -39,8 +39,9 @@
 <style>
 	.form-field.Person, .form-field.User {display: none;}
 </style>
+	<h2>Benutzer bearbeiten</h2>
 		{% if info %}
-			<h2>{{ info }}</h2>
+			<h3>{{ info }}</h3>
 		{% endif %}
 	<form action="./" method="post" data-default-action="{{ request.get_full_path }}">
 		{% csrf_token %}
@@ -97,8 +98,9 @@
 		<div class="form-field">
 			<input class="button" type="submit" value="Speichern" />
 		</div>
-	</form>
+	</form><!--  
 	{% if request.user.is_superuser %}
+	
 		<div class="cash-payers">
 		<h3>Zahlungen verwalten (geht noch nicht)</h3>
 			<table>
@@ -190,6 +192,7 @@
 					</tr>
 			</table>
 		</div>
-	{% endif %}
+		
+	{% endif %}-->
 </div>
 </div>

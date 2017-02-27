@@ -34,7 +34,7 @@ class PrintEventsByUserView( BaseView ):
 	init = True
 	
 	def __init__( self, request, user_id ):
-		self.BaseView.__init__( self, request )
+		BaseView.__init__( self, request )
 		self.user_id = user_id
 
 	def parse_request( self, user_id = None ):

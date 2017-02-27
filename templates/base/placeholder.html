@@ -73,7 +73,7 @@
 									Todo <img src="/media/img/edit.png" alt="edit"/>
 								</a>
 								<p><b>{{ todo.text }}</b></p>
-								<p>Personen:
+								<p>Personen:</p>
 								<ul>
 								{% for user in todo.users.all %}
 									<li>	
@@ -82,18 +82,12 @@
 											<img src="/media/img/edit.png" alt="edit"/>
 										</a>
 									</li>
-		
-									{% for person in persons %}
-										{% if person.user == user %}
-											{{ person.phone }} {% if person.mobile %}{{ person.mobile }}{% endif %}
-											{{ break }}
-										{% endif %}
-									{% endfor %}
+									{% if user.person.mobile %}{{ user.person.mobile }}{% endif %}
 								{% endfor %}
 								</ul>
-								</p>
-								<p class="category"><b>Aufgabe: {{ todo.category }}</b></p>	
-								<p class="priority"><b>Priorität: {{ todo.priority }}</b></p>			
+								
+								<p class="category"><b>Aufgabe: {{ todo.category }}</b></p>
+								<p class="priority"><b>Priorität: {{ todo.priority }}</b></p>
 							</div>
 						</div>
 					{% endfor %}

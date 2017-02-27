@@ -152,12 +152,12 @@ class HandleEventGroupView( BaseView ):
 			form = None
 			set_session_var( "status_info", "Keine passende Stunde gefunden! Bitte legen Sie zuerst eine Stunde an!", self.request )
 	
-		context = self.requestContext( self.request, {
+		context = {
 			'form': form,
 			"form_type" : "event_group",
 			'start_date': start_date,
 			"end_date"	: end_date,
-		} )
+		} 
 	
 		template = loader.get_template( 'base/placeholder.html' )
 	

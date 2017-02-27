@@ -99,6 +99,7 @@ class Event_Person_Comment_Form(ModelForm):
 	#user = forms.ChoiceField(widget=forms.HiddenInput())
 	#event = forms.ChoiceField(widget=forms.HiddenInput())
 	class Meta:
+		exclude = []
 		model = Event_Person_Comment
 
 class Event_Person_Grading_Form(ModelForm):

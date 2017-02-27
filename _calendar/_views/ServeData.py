@@ -7,7 +7,7 @@ import traceback
 
 from django.core import serializers
 from django.http.response import JsonResponse, HttpResponse
-
+from _calendar._models import EventModel
 from _calendar.models import Event, Event_Person_Comment, Not_At_Event_Person
 from _ui.BaseView import BaseView
 from _user.models import Person
@@ -96,6 +96,7 @@ class ServeDataView( BaseView ):
 		days = {}
 
 		for event in events:
+			eventModel = EventModel( event )
 			user_list = []    # list of all participating users
 			lead = event.lead
 			event_dic = {}    # dictionary that contains all preformatted informations

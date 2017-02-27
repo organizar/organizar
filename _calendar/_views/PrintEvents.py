@@ -22,7 +22,6 @@ from _utils.template_utils import set_session_var
 # COPYRIGHT BY	: organizar gbr					  					#
 # 								  									#
 #####################################################################
-
 class PrintEventsView( BaseView ):
 	def render( self ):
 		set_session_var( "status_info", "", self.request )
@@ -169,7 +168,7 @@ class PrintEventsView( BaseView ):
 	
 					former_lead = event.lead
 	
-		context = self.requestContext( self.request, {
+		context = {
 			"events_by_lead" : events_by_lead,
 			"users_persons" : users_persons,
 			"users"			: users,
@@ -177,7 +176,7 @@ class PrintEventsView( BaseView ):
 			"contracts"		: contracts,
 			"contract"		: contract,
 			"today"			: today,
-		} )
+		} 
 	
 		template = loader.get_template( 'base/print_events.html' )
 	

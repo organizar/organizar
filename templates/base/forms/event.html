@@ -1,5 +1,7 @@
 <div id="content">
+
 <div id="event-form-wrapper" >
+	<h2>Termin</h2>
 	<form id="event-form" action="./" method="post" data-callback="Calendar_View.newEventFormCallback()" data-default-action="{{ request.get_full_path }}">
 		{% csrf_token %}
 
@@ -16,12 +18,12 @@
 		</div>
 		<div class="form-field">
 			{{ form.start_time.errors }}
-			<label for="id_start_time">Beginn:</label>
+			<label for="id_start_time" class="datepicker-time">Beginn:</label>
 			{{ form.start_time }}
 		</div>
 		<div class="form-field">
 			{{ form.end_time.errors }}
-			<label for="id_end_time">Ende:</label>
+			<label for="id_end_time" class="datepicker-time">Ende:</label>
 			{{ form.end_time }}
 		</div>
 		<div class="form-field">

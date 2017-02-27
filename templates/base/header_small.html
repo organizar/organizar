@@ -6,11 +6,12 @@
 <head>
 	<meta charset="utf-8" />
 	
-	<title>Schüler Verwaltung</title>
+	<title>ORGANIZAR</title>
 	
 	<link rel="stylesheet" type="text/css" href="/media/css/normalize.css" />
 	<link rel="stylesheet" type="text/css" href="/media/css/foundation.min.css" />
 	<link rel="stylesheet" type="text/css" href="/media/css/core.css" />
+	<link rel="stylesheet" type="text/css" href="/media/css/timepicker.css" />
 
 	<style>
 		.pace .pace-progress {
@@ -43,6 +44,19 @@
 			text-align: right;
 			color: rgba(0, 0, 0, 0.79999999999999996);
 		}
+		form div, form .form-field {
+			max-width: 50%;
+			width: 50%;
+		}
+		.ui-timepicker-standard {
+			z-index: 99999 !important;
+		}
+		#header {
+			overflow: hidden;
+		}
+		#todos{
+			right : -250px;
+		}
 	</style>
 
 	<script type="text/javascript" src="/media/js/lib/jquery-1.8.2.min.js"></script>
@@ -54,7 +68,8 @@
 	<script type="text/javascript" src="/media/js/lib/bootstrap.js"></script>
 	<script type='text/javascript' src='/media/js/lib/jquery.mousewheel.min.js'></script>
 	<script type='text/javascript' src='/media/js/lib/angular.js'></script>
-	
+	<script type="text/javascript" src="/media/js/lib/timepicker.js"></script>
+
 	<script type="text/javascript" src="/media/js/globals.js"></script>
 	<script type="text/javascript" src="/media/js/slider.js"></script>
 	<script type="text/javascript" src="/media/js/module.overlay.js"></script>
@@ -103,7 +118,8 @@
 			if (typeof contract_id != "undefined" && contract_id != "") {
 				contract_id_field.parent().prepend(contract_id);
 			}
-		
+			
+			
 			// show and set billing contact if recently created
 // 			var user_id = $("#id_id").attr("value");
 // 			if (typeof user_id != "undefined" && user_id != "") {
