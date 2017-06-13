@@ -132,3 +132,10 @@ class Event_Person_Grading( models.Model ):
 		verbose_name = "Bewertung"
 		verbose_name_plural = "Bewertungen"
 
+
+
+
+
+
+
+

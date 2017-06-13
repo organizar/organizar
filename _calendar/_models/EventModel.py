@@ -1,7 +1,7 @@
 from _calendar.models import Event
 
 
-class EventModel():
+class EventModel:
 	event = None
 
 	def __init__( self, event ):

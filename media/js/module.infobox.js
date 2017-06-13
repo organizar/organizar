@@ -21,15 +21,26 @@ var Infobox = (function($, _this) {
 		});
 	});
 
+	_this.showError = function(theMessage) {
+		if (infobox != null) {
+			infobox.fadeIn(200);
+			infobox.css("background","#9f5730");
+			infoboxContent.html(theMessage);
+		}
+	};
+
 	_this.showMessage = function(theMessage) {
 		if (infobox != null) {
 			infobox.fadeIn(200);
+			infobox.css("background","");
 			infoboxContent.html(theMessage);
 		}
 	};
 	
 	_this.hide = function() {
-		infobox.fadeOut(200);
+		if (infobox != null) {
+			infobox.fadeOut(200);	
+		}
 	};
 	
 	return _this;

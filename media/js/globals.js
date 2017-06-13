@@ -14,6 +14,7 @@ $(document).ready(function() {
 
 	// TODOS
 	Todo_Model.init();
+	
 
 	// AJAX
 	AJAX.resetListener();
@@ -52,11 +53,14 @@ $(document).ready(function() {
 });
 
 $(window).load(function() {
+	// CALENDAR
+	Calendar_Model.init();
 	init_globals();
+
 });
 	
 function init_globals() {
-	console.log("GLOBALS ARE INITIALIZED")
+
 			var d1 = new Date();
 			var d = d1.getDate();
 			var m = d1.getMonth() + 1;
@@ -180,5 +184,6 @@ function init_globals() {
 					}
 				});
 			});
+			console.log("GLOBALS ARE INITIALIZED");
 }
 

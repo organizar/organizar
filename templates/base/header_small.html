@@ -13,6 +13,8 @@
 	<link rel="stylesheet" type="text/css" href="/media/css/core.css" />
 	<link rel="stylesheet" type="text/css" href="/media/css/timepicker.css" />
 
+		<link rel="stylesheet" type="text/css" href="/media/css/overlay/demo.css" />
+		<link rel="stylesheet" type="text/css" href="/media/css/overlay/style9.css" />
 	<style>
 		.pace .pace-progress {
 			background: #29d;
@@ -45,8 +47,8 @@
 			color: rgba(0, 0, 0, 0.79999999999999996);
 		}
 		form div, form .form-field {
-			max-width: 50%;
-			width: 50%;
+			max-width: 33%;
+			width: 33%;
 		}
 		.ui-timepicker-standard {
 			z-index: 99999 !important;
@@ -56,6 +58,237 @@
 		}
 		#todos{
 			right : -250px;
+		}
+		.event .hidden-data {
+				box-shadow: 2px 2px 8px #CCC;
+			}
+
+		label {
+			min-width: 200px;
+		}
+		#header {
+			color: #6a6a6a;
+		}
+		#header .bg {
+
+			background: #dbdbdb;
+		}		
+		#header .navigation button, button.button, .button {
+			background: #6A6A6A;
+		}
+
+		@media (max-width: 800px) {
+		   	form div, form .form-field {
+				max-width: 100%;
+				width: 100%;
+			}
+			#time-raster tr.rooms th {
+				overflow:hidden;
+			}
+		}
+		.search-results, .user-search .results {
+			width: 300px;
+			height: 400px;
+			overflow: hidden;
+			max-width: 300px;
+		}
+		#ui-datepicker-div {
+			background: rgb(245, 245, 245);
+			box-shadow: 2px 2px 8px #CCC;
+			top: 35px !important;
+			margin-left: -138px;
+			left: 50% !important;
+			
+		}
+		.ui-datepicker-next, .ui-datepicker-prev  {
+			display: block;
+			width: 50%;
+			float: left;
+			padding: 10px 15px;
+		}
+		.ui-datepicker-next {
+			text-align: right;
+		}
+
+		.ui-datepicker-title {
+			padding: 15px;
+		}	
+		.ui-datepicker-calendar a {
+			display: block;
+			width: 100%;
+			height: 100%;
+			line-height: 25px;
+		}
+		#menu {
+			top: 20%;
+			position: absolute;
+			left: 50%;
+			margin-left: -25%;
+		}
+		#menu nav {
+			margin-top: 20%;
+			
+		}
+		.overlay ul li a {
+			font-size: 16px;
+		}
+
+		.overlay {
+			z-index: 200;
+		}
+		#header #logo .bg {
+			background: #007095;
+			background-image: linear-gradient(#007095 0%,  #005b7a 100%);
+		}
+
+		.overlay button img, .overlay button.button img, .overlay .button img {
+			height: 25px;
+			margin: 10px auto;
+		}  
+		button span, .button span {
+			white-space: nowrap;
+		 	overflow: hidden;
+		 	text-overflow: ellipsis;
+		}
+
+		input[type=submit] {
+			background: #009531;
+			background-image: linear-gradient(#009531 0%, #0A782E 100%);
+			padding: 10px;
+			-webkit-box-shadow: 0px 0px 10px 0px rgba(184,184,184,1);
+			-moz-box-shadow: 0px 0px 10px 0px rgba(184,184,184,1);
+			box-shadow: 0px 0px 10px 0px rgba(184,184,184,1);
+		}
+		.event {
+			-webkit-box-shadow: 0px 0px 4px 0px rgba(184,184,184,1);
+			-moz-box-shadow: 0px 0px 4px 0px rgba(184,184,184,1);
+			box-shadow: 0px 0px 4px 0px rgba(184,184,184,1);
+			
+		}
+		.event .visible-data {
+			white-space: nowrap;
+		 	overflow: hidden;
+		 	text-overflow: ellipsis;
+			height: 100%;
+		}
+		.event .visible-data, .event .visible-data h4, .visible-data h5 {
+			font-size: 12px;
+			padding: 0;
+			margin: 0;
+		}
+		.comment .hidden-comment {
+			width: 300px;
+			background: #e6e6e6;
+		}
+		.overlay-cornershape .overlay-path {
+			fill: #007095;
+			background: #007095;
+			background-image: linear-gradient(#007095 0%,  #005b7a 100%);
+		}
+		.menu .entries .entry a {
+			border: 1px solid #6A6A6A;
+		}
+		.menu .entries .entry a:hover {
+			border: 1px solid #fff;
+		}
+		#header {
+			height: 30px !important;
+		}
+		#header .button{
+			margin: 0 5px;
+			height: 30px;
+			line-height: 30px;
+		}
+		#header #logo {
+			padding: 0;
+		}
+		#header #logo .content {
+			width: 100%;
+			height: 100%;
+			padding: 15% 0;
+		}
+		.event, .event .hidden-data {
+			border-width: 1px;
+		}
+		.button:hover{
+			transition-duration: 0.5s;
+			-webkit-transition-duration: 0.5s;
+			-moz-transition-duration: 0.5s;
+		}
+		.event .menu	{
+			border-bottom:1px solid #2d2c2f;
+			border-top: none;
+			margin: 0;
+			height: 35px;
+		}
+		.event .menu .delete {
+			float: right;
+		}
+		.button.delete:hover {
+			background: #9f3030;
+		}	
+		.button {
+			line-height: 20px;
+		}
+		#time-raster tr.rooms {
+			top: 25px;
+		}
+		#time-raster {
+			top: 55px;
+		}
+		#cal-date{
+			cursor: pointer;
+		}
+		.tasks-wrapper .task {
+			height: 60px;
+			width: 13%;
+			white-space: nowrap;
+		 	overflow: hidden;
+		 	text-overflow: ellipsis;
+			margin: 20px;
+		}
+		.tasks-wrapper .task:nth-child(2n), .object-box-wrapper .task:nth-child(2n), .tasks-wrapper .box:nth-child(2n), .object-box-wrapper .box:nth-child(2n) {
+			margin: 20px;
+		}
+		.event:hover .hidden-data {
+			display: none;
+		}
+		.event {cursor:grab;}
+		.event.ui-draggable-dragging { transform: rotate(2deg); }
+		#content .left {
+		}
+		
+		.index .logo {
+			width: 200px;
+		}
+		.index h5 {
+			text-align: left;
+			font-size: 16px;
+			padding-left: 20px;		
+		}
+		.index label {
+			text-align: left;	
+		}
+		.index form {
+			margin-left: 10%;
+		}
+		.index form div, form .form-field {
+			max-width: 100%;
+			width: 80%;
+		}
+		.index form input[type="submit"] {
+			margin-left: 20px;
+			line-height: 20px !important;
+			min-height: 20px !important;
+			background: #007095;
+			float: left;
+		}
+		.index a {
+			color: #007095;
+		}
+		.index .title {
+			color: #000;
+			font-size: 22px;
 		}
 	</style>
 
@@ -93,7 +326,15 @@
 	<script type="text/javascript" src="/media/js/module.buttonEvents.js"></script>
 
 
+		<script src="/media/js/overlay/snap.svg-min.js"></script>
+  		<script src="/media/js/overlay/modernizr.custom.js"></script>
+		<script src="/media/js/overlay/classie.js"></script>
+		<script src="/media/js/overlay/demo9.js"></script>
+<script src="https://unpkg.com/vue"></script>
 	<script>
+
+
+
 		function handle_contract() {
 			var add_user_buttons = $("#add-new-contact, #add-new-billing-contact");
 

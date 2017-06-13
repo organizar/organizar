@@ -18,7 +18,7 @@ urlpatterns = patterns( '',
 					
 					
 					
-	url( r'^api/v1/', include( router.urls ) ),
+	#url( r'^api/v1/', include( router.urls ) ),
 
 	url( r'^$', views.index, name = 'index' ),
 	url( r'^calendar/$', views.placeholder, name = 'placeholder' ),

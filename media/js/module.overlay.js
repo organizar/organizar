@@ -59,13 +59,17 @@ var Overlay = (function(options, $) {
 			var form = $(form);
 			var callback = form.data("callback");
 			if (typeof form != "undefined" && callback != "") {
-				console.log("!!!!! FOUND CALLBACK !!!!!!");
+				console.log("FOUND CALLBACK");
 				eval(callback);
 			}
 		});
 		
 		
 		//reloadListener();
+		setListener();
+	};
+	
+	var setListener = function() {
 		setLayerListener();
 		checkValidation();
 		handleFormPosts();
@@ -133,7 +137,7 @@ var Overlay = (function(options, $) {
 						var data = $(this).serialize();
 						var url = $(this).attr("action");
 						Infobox.showMessage("Speichere Daten... Bitte warten...");
-						AJAX.post(url, data, Overlay.showData, "#content");
+						AJAX.post(url, data, Overlay.close, "#content");
 					}
 				});
 			}

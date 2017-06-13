@@ -30,6 +30,7 @@ var AJAX = (function(_this, $) {
 			handleResult(result, callback, divClassOrID);
 		}).fail(function(e) {
 			console.log( "~~~ AJAX MODEL: AJAX MODEL: error", e);
+			Infobox.showError("Fehler: Konnte URl nicht erreichen! " + url);
 		}).always(function() {
 			console.log( "~~~ AJAX MODEL: AJAX MODEL: complete" );
 		});
@@ -54,8 +55,9 @@ var AJAX = (function(_this, $) {
 			handleResult(result, callback, divClassOrID);
 		}).fail(function(e) {
 			console.log( "~~~ AJAX MODEL: error", e);
+			Infobox.showError("Fehler: Konnte URl nicht erreichen! " + url);
 		}).always(function() {
-			console.log( "~~~ AJAX MODEL: complete" );
+			console.log( "~~~ AJAX MODEL: complete" ); 
 		});
 	};
 

@@ -16,7 +16,6 @@ from utils.TimeUtils import Watch
 
 class BaseView( object ):
 	request = None
-	current_user = None
 	
 	PDF_CNT_TYPE = 'application/pdf'
 	
@@ -62,11 +61,5 @@ class BaseView( object ):
 		return response
 
 	def is_superuser( self ):
-		is_superuser = False
-
-		if self.current_user == None:
-			self.current_user = self.request.user
-			is_superuser = self.current_user.is_superuser
-
-		return is_superuser
+		return self.request.user.is_superuser
 	

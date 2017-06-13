@@ -1,5 +1,5 @@
 from django.contrib import admin
-from _billing.models import Contract_Type, Contract, Charge, Frequency, Duration, Discount, Account, Accounting
+from _billing.models import Contract_Type, Contract, Charge, Frequency, Duration, Discount, Account, Accounting, Bill
 
 
 admin.site.register(Contract)
@@ -10,3 +10,4 @@ admin.site.register(Duration)
 admin.site.register(Discount)
 admin.site.register(Account)
 admin.site.register(Accounting)
+admin.site.register(Bill)

@@ -1,3 +1,4 @@
+{% load i18n %}
 {% include "base/header_small.html" %}
 
 <body id="placeholder" class="{% if request.user and request.user.is_superuser %}admin{% else %}member{% endif %}">
@@ -16,7 +17,7 @@
 
 {% if form_type %}
 	<div style="margin: 0 0 70px 0">
-		<a href="/" class="button back">Zurück</a>
+		<a href="/" class="button back">{% trans "back" %}</a>
 	</div>
 	{% if form_type == "event" %}
 		{% include "base/forms/event.html" %}
@@ -38,7 +39,7 @@
 		<form action="{{ form_action }}" method="post">
 			{% csrf_token %}
 			{{ form_second.as_p }}
-			<input class="button" type="submit" value="Speichern" />
+			<input class="button" type="submit" value="{% trans 'save' %}"/>
 		</form>
 	</div>
 {% else %}
@@ -86,8 +87,8 @@
 								{% endfor %}
 								</ul>
 								
-								<p class="category"><b>Aufgabe: {{ todo.category }}</b></p>
-								<p class="priority"><b>Priorität: {{ todo.priority }}</b></p>
+								<p class="category"><b>{% trans "category" %}: {{ todo.category }}</b></p>
+								<p class="priority"><b>{% trans "priority" %}: {{ todo.priority }}</b></p>
 							</div>
 						</div>
 					{% endfor %}
@@ -105,6 +106,34 @@
 			</div>
 		</div>
 {% endif %}
+		<div class="overlay overlay-cornershape" data-path-to="m 0,0 1439.999975,0 0,805.99999 -1439.999975,0 z">
+			<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 1440 806" preserveAspectRatio="none">
+				<path class="overlay-path" d="m 0,0 -1439.999975,0 0,-805.99999 0,805.99999 z"/>
+			</svg>
+			<button type="button" class="overlay-close">{% trans "close" %}</button>
+		<div id="menu" class="menu">	<nav>
 
+				<ul class="entries">
+					{% if request.user.is_superuser %}
+						<li class="entry"><a class="button ajax show_in_overlay" href="/handle_control_panel/" data-divclassorid="#content"><img src="/media/img/menu_white.png" alt="" />{% trans "controlCenter" %}</a></li>
+						<!-- <li class="entry"><a class="button ajax show_in_overlay" data-divclassorid="#event-form-wrapper" href="/event/new/add/"><img src="/media/img/book_black.png" alt=""/><p>Stunde hinzufügen</p></a></li> -->
+						<!--<a class="button" href="/contract/new/">Neuer Vertrag</a>-->
+						<!--<a class="button" href="/sync_events/">Synchronisieren</a>-->
+						<li class="entry"><a class="button ajax show_in_overlay" data-divclassorid="#content" href="/task_control/"><img src="/media/img/todo.png" alt=""/><p>{% trans "tasks" %}</p></a></li>
+						<li class="entry"><a class="button ajax show_in_overlay" data-divclassorid="#page" data-callback="handle_contract" href="/contract_list/"><img src="/media/img/book_black.png" alt="" />{% trans "contracts" %}</a></li>
+
+						<li class="entry"><a class="button ajax show_in_overlay" data-divclassorid="#content" href="/person/new/0/"><img src="/media/img/person.png" alt=""/><p>{% trans "createNewUser" %}</p></a></li>
+						<!-- <li class="entry"><a class="button ajax show_in_menu" href="/handle_user/"><img src="/media/img/person.png" alt=""/> Benutzer Verwalten</a></li> -->
+						<!--  
+							barzaler
+							persönliche daten
+						 -->
+					 {% endif %}
+					<li class="entry"><a class="button ajax show_in_overlay" data-divclassorid="#print-page" href="/print/" ><img src="/media/img/print.png" alt=""/><p>{% trans "print" %}</p></a></li><!--<a href="/move_events_in_future">future</a>-->
+					<li class="entry"><a class="button ajax" href="/person/edit/{{ user.id }}/" data-divclassorid="#content"><img src="/media/img/person.png" alt=""/><p>{% trans "ownProfile" %}</p></a></li>
+				</ul>
+			
+			</nav></div>
+		</div>
 </body>
 </html>

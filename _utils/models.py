@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 import json
 
 from django.contrib.auth.decorators import login_required
-#from restless.views import Endpoint
+#from restless.ui import Endpoint
 
 from _calendar.models import Event, Event_Person_Comment, Not_At_Event_Person
 

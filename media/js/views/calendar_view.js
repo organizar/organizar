@@ -55,11 +55,11 @@ var Calendar_View = (function(_this, $) {
 			var comment = clickedElem.data("comment");
 			var href = clickedElem.attr("href");
 			var html = 	"<div class=\"select-excused\">" +
-							"<h2>Die Abwesenheit für den Schüler einstellen</h2>" +
-							"<textarea class=\"comment\">" + comment + "</textarea>" +
-							"<div class=\"button excused\">Entschuldigt</div>" +
+							"<h2>Abwesenheit</h2>" +
+							"<div class=\"form-field\" style=\"width: 100%; height: 180px;\"><textarea class=\"comment\">" + comment + "</textarea></div>" +
+							"<div class=\"form-field\"><div class=\"button excused\">Entschuldigt</div>" +
 							"<div class=\"button not-excused red \">nicht Entschuldigt</div>" +
-							"<div class=\"button participating\">Anwesend</div>" +
+							"<div class=\"button participating\">Anwesend</div></div>" +
 						"</div>";
 			Overlay.showData(html);
 			var buttonNotExcused = $("#overlay-content").find(".button.not-excused");
@@ -297,6 +297,30 @@ var Calendar_View = (function(_this, $) {
 					end_time_field = overlay.find("#id_end_time");
 					end_time = new Date(time.getTime() + 45 * 60000);
 					end_time_minues = (end_time.getMinutes() == 0) ? "00" : end_time.getMinutes();
+					
+					start_time_field.timepicker({
+						timeFormat: 'HH:mm',
+						interval: 15,
+						minTime: '07',
+						maxTime: '23:00pm',
+						defaultTime: time,
+						startTime: '08:00',
+						dynamic: false,
+						dropdown: true,
+						scrollbar: true
+					});
+					
+					end_time_field.timepicker({
+						timeFormat: 'HH:mm',
+						interval: 15,
+						minTime: '07',
+						maxTime: '23:00pm',
+						defaultTime: end_time,
+						startTime: '08:00',
+						dynamic: false,
+						dropdown: true,
+						scrollbar: true
+					});
 					//end_time_field.attr("value", (end_time.getDay()+"."+end_time.getFullMonth() + "." + end_time.getYear() + " " + end_time.getHours() + ":" + end_time_minues ));
 					//start_time_field.attr("value", (time.getHours() + ":" + time.getMinutes()));
 	
@@ -336,12 +360,7 @@ var Calendar_View = (function(_this, $) {
 			//month = month + day_from_session.getDay();
 			month = (parseInt(month) < 10) ? "0" + month : month;
 			year = day_from_session.getFullYear();
-			console.log("month " + month);
-			console.log("day " + day);
-			console.log("year " + year);
 			$("#id_date").val(day + "." + month + "." + year)
-			
-			console.log("curr day");
 		}
 
 		var fields = ["id_date", "id_start_time", "id_end_time", "id_room", "id_users", "id_category", "id_lead"];
@@ -374,13 +393,14 @@ var Calendar_View = (function(_this, $) {
 	_this.day_entinty = '<div class="day-entity">{{ time }}</div>';
 
 	_this.template_event = 
-		'<li class="event clear {{ date }} {{ category_small }}" data-id="{{ id }}" data-room="{{ room }}" data-date="{{ date_as_utc }}">' +
+		'<li class="event clear {{ date }} {{ category_small }}" data-id="{{ id }}" data-room="{{ room }}" data-lead="{{ lead }}" data-date="{{ date_as_utc }}">' +
 			'<div class="visible-data">' +
 				'<h5 class="time">{{ start_time }} bis {{ end_time }}</h5>' +
-				'<span class="lead"><h4>{{ lead }} <br/>{{ lead_phone }} {{ lead_mobile }}</h4></span>' +
 				'<b>{{ date }}</b><br/>' +
-				'<span><b>Fach:</b> {{ category }}<br/>' +
-				'<b>Raum:</b> {{ room }}</span><br/>' +
+				'<span><b>Typ:</b> {{ category }}<br/>' +
+				'<b>Ort:</b> {{ room }}</span><br/>' +
+				'<span class="lead"><h4>{{ lead }}</h4><!--<br/>{{ lead_phone }} {{ lead_mobile }}--></span>' +
+				
 				'<b>Schüler</b><br/>' +
 				'{{#user_list}}' +
 						'<span class="user-data">{{#person_absent}}<s><b>{{/person_absent}}{{ user_name }},{{#person_absent}}</b></s>{{/person_absent}} </span>'+
@@ -388,6 +408,16 @@ var Calendar_View = (function(_this, $) {
 			'</div>' +
 			'<div class="hidden-data hidden {{ category_small }}">' +
 				'<div class="data clear">' +
+					'{{#user_is_superuser}}' +
+						'<div class="menu">'+
+							'<a class="button ajax" data-divclassorid="#content" href="/event/{{ id }}/edit/"><img src="/media/img/edit.png" alt="edit"/></a>' +
+							'<a class="button ajax delete" href="/event/{{ id }}/delete/"><img src="/media/img/delete.png" alt="delete"/></a>' +
+							'{{#event_group}}' +
+							'<a class="button clear ajax" data-divclassorid="#content" href="edit/group/{{ event_group }}/{{ id }}/">Serie <img src="/media/img/edit.png" alt="edit"/></a>' +
+							'<a class="button delete ajax" href="delete/group/{{ event_group }}/">Serie <img src="/media/img/delete.png" alt="delete"/></a>' +
+							'{{/event_group}}' +
+						'</div>' +
+					'{{/user_is_superuser}}' +
 					'<h4 class="time" style="color: black;"> {{ start_time }} bis {{ end_time }} </h4><h5>{{ date }}</h5>' +
 					'<span><b>Lehrer:</b> {{ lead }}' +
 					'{{#user_is_superuser}}' +
@@ -418,16 +448,6 @@ var Calendar_View = (function(_this, $) {
 							'</li>'+
 						'{{/user_list}}' +
 					'</ul>'+
-					'{{#user_is_superuser}}' +
-						'<div class="menu">'+
-							'<a class="button ajax" data-divclassorid="#content" href="/event/{{ id }}/edit/">Stunde <img src="/media/img/edit.png" alt="edit"/></a>' +
-							'<a class="button ajax delete" href="/event/{{ id }}/delete/">Stunde <img src="/media/img/delete.png" alt="delete"/></a>' +
-							'{{#event_group}}' +
-							'<a class="button clear ajax" data-divclassorid="#content" href="edit/group/{{ event_group }}/{{ id }}/">Serie <img src="/media/img/edit.png" alt="edit"/></a>' +
-							'<a class="button delete ajax" href="delete/group/{{ event_group }}/">Serie <img src="/media/img/delete.png" alt="delete"/></a>' +
-							'{{/event_group}}' +
-						'</div>' +
-					'{{/user_is_superuser}}' +
 				'</div>' +
 			'</div>' + 
 		'</li>';

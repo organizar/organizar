@@ -6,58 +6,45 @@
 		<section id="page">
 			<section id="content" class="clear">
 				<div class="left ">
-					<br/><br/><br/><br/> 	
-					<h2>Einloggen</h2>
-					<form action="/" method="post">{% csrf_token %}
-						<div style="width: 100%;">
-							{% for field in form %}
-								<div class="form-field">
-									{% if field.errors %}<div class="error"> {% for error in field.errors %}{{ error }}{% endfor %}</div>{% endif %}
-									<label class="control-label {% if field.errors %}error{% endif %}">{{ field.label }}</label> 
-									{{ field }}
-								</div>
-							{% endfor %}
-						</div>
-						<input class="button" type="submit" style="min-height: 40px; line-height: 40px; width: 200px;" name="submit-login" id="submit-login" value="Einloggen" />
-						<!--  
-						<div style="width: 100%">
-							<p style="font-size: 12px;">
-								<br/><br/><br/><br/>
-								<a href="#">Passwort vergessen!</a> | 
-								<a href="content/register.html">Registrieren</a>
-							</p>
-						</div>
-						-->
-					</form>
+					<span class="title">Organizar</span>
+					<br/><img class="logo" src="/media/img/logo.png" />
 				</div>
-
 				<div class="right">
-					<div class="box clear">
-						<h1>ORGANIZAR</h1>
-						<h2>Willkommen!</h2>
-						<p>
-						Wir freuen uns das sie den <b>ORGANIZAR</b> verwenden.
-						Der <b>ORGANIZAR</b> dient der Verwaltung von "Orten" 
-						und "Personen". Wenn Sie vor der Aufgabe stehen, 
-						verschiedene Gruppen oder einzelne Personen auf Räume, Fahrzeuge, Maschienen oder Arbeitsplätze zu verteilen,
-						ist <b>ORGANIZAR</b> Ihre Rettung.
-						<b>Einfach, intuitiv und zuverlässig</b> können Sie Ihre
-						Kunden und Aufträge auch gleich abrechnen.
-						</p>
-						<p>
-						Dies ist eine Testversion. Bitte entschuldigen Sie eventuelle Fehler. 
-						Bei Problemen, Vorschlägen oder Fragen kontaktieren Sie bitte das <a href="mailto:info@bildungszentrum-rheinfelden.de">Bildungszentrum Rheinfelden</a>. 
-						<br/><br/>
-						<a href="mailto:info@bildungszentrum-rheinfelden.de">info@bildungszentrum-rheinfelden.de</a>
-						</p>
-						<!-- 
-						Mit dem integrierten Buchhaltungssysthem, können Sie
-						schnell und effizient Rechnungen oder Angebote erstellen.
-						 -->
+					<div class="clear">
+						<form action="/" method="post">{% csrf_token %}
+							<div style="width: 100%;">
+								{% for field in form %}
+									<div class="form-field">
+										{% if field.errors %}<div class="error"> {% for error in field.errors %}{{ error }}{% endfor %}</div>{% endif %}
+										<label class="control-label {% if field.errors %}error{% endif %}">{{ field.label }}</label> 
+										{{ field }}
+									</div>
+								{% endfor %}
+							</div>
+							<input class="button" type="submit" style="min-height: 40px; line-height: 40px; width: 200px;" name="submit-login" id="submit-login" value="Einloggen" />
+						</form>
 					</div>
-
+					<a style="margin-top: 0px; font-size: 9px; text-align: left;  margin-left: 14%; display: block;" href="#">Passwort vergessen</a> 
 				</div>
 			</section>
+			<div>
+				<p style="font-size: 12px;">
+					<br/><br/><br/><br/>
+					<a href="http://organizar.de"/>Impressum</a>
+				</p>
+			</div>
 		</section>
+<script>
+new Vue({
+  el: '#app',
+  data: {
+    message: 'Hello Vue.js!'
+  }
+})
+</script>
+<div id="app">
+  <p>{{ message }}</p>
+</div>
+
 	</body>
 </html>

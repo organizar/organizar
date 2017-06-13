@@ -1,23 +1,30 @@
 # coding=UTF-8
 
-from django.db import models
-import datetime
-from datetime import timedelta
-from django.contrib.auth.models import User
 from calendar import monthrange
-import traceback
+from datetime import timedelta
+import datetime
 import sys 
+import traceback
+
+from django.contrib.auth.models import User
+from django.db import models
+
 from _user.models import Person
+
 
 # #CHANGED
 # class Product(models.Model):
 # 	name = models.CharField(max_length=200)
 # 	price = models.DecimalField("Preis", max_digits=15, decimal_places=2, blank=True, null=True)
+class Account_Type(models.Model):
+	name = models.CharField(max_length=200)
 
 class Account(models.Model):
+	number = models.IntegerField(max_length=10)
 	name = models.CharField(max_length=200)
 	balance = models.DecimalField(decimal_places=2, max_digits=15)
-
+	type = models.ForeignKey(Account_Type, related_name="acount_type")
+	
 	def __unicode__(self):
 		return str(self.name)
 
@@ -28,11 +35,11 @@ class Account(models.Model):
 class Accounting(models.Model):
 	debitor = models.ForeignKey(Account, related_name="debitor")
 	creditor = models.ForeignKey(Account, related_name="creditor")
-	ammount =  models.DecimalField(decimal_places=2, max_digits=15)
+	ammount = models.DecimalField(decimal_places=2, max_digits=15)
 	date = models.DateField("Buchungsatum", default=datetime.date.today)
 
 	def __unicode__(self):
-		return str( str(self.debitor.name) + " / " + str(self.creditor.name) + " = " + str(self.ammount))
+		return str(str(self.debitor.name) + " / " + str(self.creditor.name) + " = " + str(self.ammount))
 
 	class Meta:
 		verbose_name = "Buchung"
@@ -103,11 +110,11 @@ class Contract(models.Model):
 	type = models.ForeignKey(Contract_Type)
 	start_date = models.DateField("Start Datum", default=datetime.date.today)
 	end_date = models.DateField("End Datum", default=datetime.date.today)
-	#charge = models.ForeignKey(Charge)
-	contact = models.ForeignKey(User,related_name='contract_contact')
-	billing_contact = models.ForeignKey(User,related_name='contract_billing_contact')
-	#duration = models.ForeignKey(Duration)
-	#frequency = models.ForeignKey(Frequency)
+	# charge = models.ForeignKey(Charge)
+	contact = models.ForeignKey(User, related_name='contract_contact')
+	billing_contact = models.ForeignKey(User, related_name='contract_billing_contact')
+	# duration = models.ForeignKey(Duration)
+	# frequency = models.ForeignKey(Frequency)
 	discount = models.ManyToManyField(Discount, blank=True, null=True, related_name='contract_discounts')
 	with_tax = models.BooleanField(default=False)
 	
@@ -141,7 +148,7 @@ class Contract(models.Model):
 			if x != None:
 				for discount in self.discount.all():	
 					discount_data = {}
-					d = x * (float(discount.discount)/100)
+					d = x * (float(discount.discount) / 100)
 					discount_data["amount"] = float(d)
 					discount_data["name"] = discount.name
 					discount_data["discount"] = discount.discount
@@ -207,16 +214,17 @@ class Contract(models.Model):
 		verbose_name = "Vertrag"
 		verbose_name_plural = "Verträge"
 
-# CHANGED
-# class Bill(models.Model):
-# 	number = models.CharField("Rechnungsnummer", max_length=200)
-# 	person = models.ForeignKey(Person)
-# 	contract = models.ForeignKey(Contract)
-# 	date = models.DateField(null=True)
-# 	
-# 	def __unicode__(self):
-# 		return (str(self.number) + " " + str(self.person.name))
-# 	
-# 	class Meta:
-# 		verbose_name = "Rechnung"
-# 		verbose_name_plural = "Rechnungen"
+
+class Bill(models.Model):
+	number = models.CharField("Rechnungsnummer", max_length=200)
+	person = models.ForeignKey(Person)
+	contract = models.ForeignKey(Contract)
+	date = models.DateField(null=True)
+	paid = models.BooleanField(default=None)
+	
+	def __unicode__(self):
+		return (str(self.number) + " " + str(self.person.name))
+	
+	class Meta:
+		verbose_name = "Rechnung"
+		verbose_name_plural = "Rechnungen"

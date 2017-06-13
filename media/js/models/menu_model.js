@@ -161,8 +161,8 @@ var Menu_Model = (function(_this, $) {
 		page.css({
 			"margin-top" : (small_height + 60) + "px",
 		});
-
-		nav.click(function() {
+		// disabled 20170509 
+		/*nav.click(function() {
 			if (header.hasClass("out")) {
 				header.removeClass("out");
 				header.css({
@@ -183,7 +183,7 @@ var Menu_Model = (function(_this, $) {
 					"height" : big_height + "px",
 				});
 			}
-		});
+		});*/
 	}
 
 	return _this;

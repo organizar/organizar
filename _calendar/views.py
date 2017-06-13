@@ -249,9 +249,9 @@ def placeholder( request, user_id = None, event_id = None, action = None ):
 
 def index( request ):
 	print( "~~~~~~~~~~~~~~~~~ index ~~~~~~~~~~~~~~~~~~~" )
-	username = request.POST.get( 'email', "" )
+	username = request.POST.get( 'username', "" )
 	password = request.POST.get( 'password', "" )
-	form = LoginForm()
+	form = LoginForm(initial={"password": "      ", "username":""})
 	template = "base/index.html"
 
 	if request.user.is_authenticated():
