@@ -28,12 +28,14 @@ var Infobox = (function($, _this) {
 			infoboxContent.html(theMessage);
 		}
 	};
-
-	_this.showMessage = function(theMessage) {
+	_this.showInfo = function(message) {
+		_this.showMessage(message);
+	}
+	_this.showMessage = function(message) {
 		if (infobox != null) {
-			infobox.fadeIn(200);
+			infobox.fadeIn(200).delay(1000).fadeOut(200);
 			infobox.css("background","");
-			infoboxContent.html(theMessage);
+			infoboxContent.html(message);
 		}
 	};
 	

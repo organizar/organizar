@@ -8,7 +8,6 @@ var Calendar_View = (function(_this, $) {
 		var prev_week_button = $("#prev-week");
 
 		if (SHOW_EVENTS) {
-			Calendar_Model.init();
 			cal_nav.fadeIn();
 		}
 		else {

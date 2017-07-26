@@ -31,8 +31,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db.models import Q
 from django.forms.models import model_to_dict
-from django.http import HttpResponse
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse, JsonResponse, HttpResponseRedirect 
+from django.http import Http404
 from django.shortcuts import render_to_response
 from django.template import Context
 from django.template import RequestContext, loader
@@ -53,11 +53,14 @@ from _calendar._views.PrintEventsByUser import PrintEventsByUserView
 from _calendar._views.ServeData import ServeDataView
 from _calendar.forms import LoginForm, Event_Form, Event_Serie_Form, Not_At_Event_Form, Event_Person_Comment_Form, Event_Group_Form
 from _calendar.models import Event, Room, Event_Group, Category, Event_Person_Comment, Not_At_Event_Person
+from _calendar._serializer.EventSerializer import EventSerializer
 from _todo.models import Todo
 from _user.models import Person, Billing_Contact
 from _utils.template_utils import set_session_var
-
-
+from rest_framework.renderers import JSONRenderer
+from rest_framework.parsers import JSONParser
+from rest_framework.decorators import api_view
+from rest_framework.decorators import parser_classes
 # import ho.pisa as pisa
 #################
 # 				#
@@ -704,7 +707,7 @@ def convertHtmlToPdf( sourceHtml, outputFilename ):
 
 
 
-
+@login_required( login_url = '/' )
 def get_contracts_with_pdf( contracts ):
 	contracts_array = []
 	path = settings.MEDIA_ROOT + '/pdf/contracts/'
@@ -763,12 +766,58 @@ def contract_list( request ):
 	return HttpResponse( template.render( context ) )
 
 
+
+@api_view(['POST', 'GET'])
+def edit_event(request, id=None):
+	if (id == None):
+		return
+	event = Event.objects.get(id=id)
+	if request.method == 'GET':
+		serialized = EventSerializer(instance=event, many=False)
+	
+	if request.method == 'POST':
+		try:
+			event_data = request.data["data"]
+			json_event = json.loads(event_data)
+			serialized = EventSerializer(instance=event, data=json_event, many=False)
+			if(serialized.is_valid()):
+				serialized.save()
+				print("saved " + str(serialized.validated_data))
+			else:
+				print(serialized.errors)
+				print("not valid!" + str())
+
+		except:
+			print ( traceback.format_exc() )
+			print("error saving event"  + event.name)
+	return JsonResponse(serialized.data, safe=False)
+
+@api_view(['POST', 'GET'])
+@parser_classes((JSONParser,))
+def all_events(request, from_date=None, to_date=None):
+    """
+    List all code events, or create a new event.
+    """
+    if from_date != None and to_date != None:
+	from_date = datetime.strptime(from_date, '%Y-%m-%d')
+        to_date = datetime.strptime(to_date, '%Y-%m-%d')
+        events = Event.objects.filter(date__range=[from_date, to_date])
+    else:
+	events = Event.objects.all()
+        
+    serializer = EventSerializer(events, many=True)
+
+    return JsonResponse(serializer.data, safe=False)
+
+
+
 # @cache_page(60 * 15)
 # @csrf_protect
 @login_required( login_url = '/' )
 def print_hours( request, user_id = None, from_date = None, to_date = None ):
 	view = PrintEventsByUserView( request, user_id )
 	return view.render()
+
 
 @login_required( login_url = '/' )
 def print_contract( request, contract_id = None ):

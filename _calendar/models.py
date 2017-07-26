@@ -53,7 +53,8 @@ class Event_Group( models.Model ):
 		verbose_name_plural = "Stundeserien"
 
 class Event( models.Model ):
-	name = models.CharField( "Name", max_length = 200 )
+	name = models.CharField( "Name", max_length = 200, blank = True, null = True )
+	#comment = models.CharField( "Comment", max_length = 500, blank = True, null = True )
 	date = models.DateTimeField( "Tag", default = datetime.date.today )
 	start_time = models.DateTimeField( "Beginn", default = datetime.date.today, blank = True, null = True )
 	end_time = models.DateTimeField( "Ende", default = datetime.date.today, blank = True, null = True )

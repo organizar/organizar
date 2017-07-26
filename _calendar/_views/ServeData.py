@@ -45,7 +45,7 @@ class ServeDataView( BaseView ):
 		print( "------------  POST key : " + str( key ) )
 		print( "------------  POST _day : " + str( _day ) )
 
-		data = serializers.serialize( "json", Person.objects.all() )
+		#data = serializers.serialize( "json", Person.objects.all() )
 		print( "------------  Parsed all persons as json" )
 
 		if key != "events":
@@ -65,13 +65,13 @@ class ServeDataView( BaseView ):
 			query_day = _day.strftime( '%d' )
 			query_month = _day.strftime( '%m' )
 			query_year = _day.strftime( '%Y' )
-			print( "------------ date " + str( _day ) + " " + str( _day.year ) + " " + str( _day.month ) + " " + str( _day.day ) )
-			events = Event.objects.filter( date__year = query_year, date__month = query_month, date__day = query_day )    # )    # (date__gt=min_date, date__lt=max_date)min_date = _day    # timedelta(days=int(-_days)) + _day
-			events = Event.objects.filter( date = _day )
+			#print( "------------ date " + str( _day ) + " " + str( _day.year ) + " " + str( _day.month ) + " " + str( _day.day ) )
+			#events = Event.objects.filter( date__year = query_year, date__month = query_month, date__day = query_day )    # )    # (date__gt=min_date, date__lt=max_date)min_date = _day    # timedelta(days=int(-_days)) + _day
+			events = Event.objects.filter( date__year = _day.year, date__month = _day.month, date__day = _day.day )
 		else:
 			events = Event.objects.filter( date__year = _day.year, date__month = _day.month, date__day = _day.day, lead = self.current_user )    # (date__gt=min_date, date__lt=max_date)	max_date = _day _days = self.request.POST.get( 'days', None )   # timedelta(days=int(_days)) + _day
 
-		print( "------------  Loading events done! " + str( len( events ) ) + " out of " + str( len( Event.objects.all() ) ) )
+		print( "------------  Loading events done! " + str(len(events)))
 		print( "------------  Parsing events..." )
 		days = self.pase_events( events )
 		print( "------------  Parsing events done!" )
@@ -122,8 +122,8 @@ class ServeDataView( BaseView ):
 			start_time_str = curr_start_time.strftime( '%H:%M' )
 			curr_end_time_str = curr_end_time.strftime( '%H:%M' )
 			
-			print( "------------date_as_string " + date_as_string )
-			print( "------------date_as_utc " + date_as_utc )
+			#print( "------------date_as_string " + date_as_string )
+			#print( "------------date_as_utc " + date_as_utc )
 
 			event_dic["date"] = date_as_string
 			event_dic["day_of_week"] = event.date.strftime( "%A" )
@@ -146,7 +146,7 @@ class ServeDataView( BaseView ):
 			else:
 				event_dic["category"] = "Kein Fach"
 
-			print( "------------ loading events users... " )
+			#print( "------------ loading events users... " )
 
 			if event.users.all() != None:
 				for user in event.users.all():
@@ -179,7 +179,7 @@ class ServeDataView( BaseView ):
 						pass
 					user_list.append( _user )
 
-			print( "------------ loading events users done! " )
+			#print( "------------ loading events users done! " )
 
 			event_dic["user_list"] = user_list
 

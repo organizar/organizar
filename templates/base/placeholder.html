@@ -1,8 +1,8 @@
 {% load i18n %}
 {% include "base/header_small.html" %}
 
-<body id="placeholder" class="{% if request.user and request.user.is_superuser %}admin{% else %}member{% endif %}">
-
+<body id="placeholder"">
+	<div id="loading"><div class="wrapper"><span class="text">Loading UI...<br/>Loading Data...</span></div></div>
 {% if info %}
 	<h1>{{ info }}</h1>
 {% endif%}
@@ -15,6 +15,7 @@
 	</div>
 {% endif%}
 
+<!--
 {% if form_type %}
 	<div style="margin: 0 0 70px 0">
 		<a href="/" class="button back">{% trans "back" %}</a>
@@ -43,69 +44,23 @@
 		</form>
 	</div>
 {% else %}
-
+-->
 
 		{% include "base/menu.html" %}
 
-		<section id="page">
-			<div id="all_persons" class="hidden">
-				{% for user in all_users  %}
-					<a href="/person/edit/{{user.id }}/" class="search-value ajax show_in_overlay" data-divclassorid="#content">
-						<button class="person"><span class="text">{% if not user.last_name %}{{ user.username }}{% elif user.first_name %}{{ user.first_name }} {{ user.last_name }}{% else %}{{ user.last_name }}{% endif %}</span> <img src="/media/img/edit.png" alt="edit"/></button> 
-					</a>
-				{% endfor %}
-			</div>
-			{% if request.user.is_superuser %}
-				<div id="todos">
-					<div class="menu">
-						<div class="button show-hide-todos">&lt;</div>
-						<a class="button add-todo ajax show_in_overlay" data-divclassorid="#content" href="/handle_todo/">
-							+
-						</a>
-					</div>
-					{% for todo in todos %}
-						<div class="todo {{ todo.category | lower }} {{ todo.priority | lower }} {{ todo.done }}">
-							{% for user in todo.users.all %}
-								{{ user.first_name }} {{ user.last_name }}
-							{% endfor %}
-							<div class="hidden-data">
-								<div class="close button">x</div>
-								<a class="button ajax show_in_overlay" data-divclassorid="#content" href="/handle_todo/{{ todo.id }}/">
-									Todo <img src="/media/img/edit.png" alt="edit"/>
-								</a>
-								<p><b>{{ todo.text }}</b></p>
-								<p>Personen:</p>
-								<ul>
-								{% for user in todo.users.all %}
-									<li>	
-										{{ user.first_name }} {{ user.last_name }}
-										<a class="button ajax" data-divclassorid="#content" href="/person/edit/{{ user.id }}/">
-											<img src="/media/img/edit.png" alt="edit"/>
-										</a>
-									</li>
-									{% if user.person.mobile %}{{ user.person.mobile }}{% endif %}
-								{% endfor %}
-								</ul>
-								
-								<p class="category"><b>{% trans "category" %}: {{ todo.category }}</b></p>
-								<p class="priority"><b>{% trans "priority" %}: {{ todo.priority }}</b></p>
-							</div>
-						</div>
-					{% endfor %}
-				</div>
-			{% endif %}
-			<div id="cal-message"></div>
-			<div id="time-raster"></div>
-			<div id="events"></div>
+	<section id="page">
+		<div id="cal-message"></div>
+		<div id="time-raster"></div>
+		<div id="events"></div>
 
-		</section>
-		<div id="overlay">
-			<div id="overlay-background"></div>
-			<div id="overlay-content">
-				<div id="overlay-info"></div>
-			</div>
+	</section>
+	<div id="overlay">
+		<div id="overlay-background"></div>
+		<div id="overlay-content">
+			<div id="overlay-info"></div>
 		</div>
-{% endif %}
+	</div>
+<!--{% endif %}-->
 		<div class="overlay overlay-cornershape" data-path-to="m 0,0 1439.999975,0 0,805.99999 -1439.999975,0 z">
 			<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 1440 806" preserveAspectRatio="none">
 				<path class="overlay-path" d="m 0,0 -1439.999975,0 0,-805.99999 0,805.99999 z"/>
@@ -135,5 +90,250 @@
 			
 			</nav></div>
 		</div>
+
+<div id="app" >
+	<event-item inline-template
+		v-for="event in events"
+		v-bind:event="event"
+		v-bind:key="event.id"
+	>
+
+		<li class="event clear deutsch" 
+			:class="event.date" 
+			:data-id="event.id" 
+			:data-room="event.room" 
+			:data-lead="event.lead" 
+			:data-date="event.date"
+			:data-start_time="event.start_time"
+			:data-end_time="event.end_time"
+			:data-category="event.category"
+		>
+			<div class="visible-data">
+				<h5 class="time">[[ event.start_time ]] bis [[ event.end_time ]]</h5>
+				<br/>
+				<span><b>Kategorie:</b> [[ event.category ]]<br/>
+				<b>Ort:</b>  [[ event.room ]]</span><br/>
+				<span class="lead"><h4>[[ event.lead ]]</h4></span>
+				<b>Teilnehmer</b><br/>
+						<span class="user-data" v-if="event.person_absent"><s><b>person_absent user_name ,person_absent</b></s>[[ event.person_absent ]]</span>
+			</div>
+			<div class="hidden-data hidden  category_small ">
+				<div class="data clear">
+						<div class="menu" v-if="event.user_is_superuser">
+							<a class="button ajax" data-divclassorid="#content" href="/event/ id /edit/"><img src="/media/img/edit.png" alt="edit"/></a>
+							<a class="button ajax delete" href="/event/event.id/delete/"><img src="/media/img/delete.png" alt="delete"/></a>
+							<a class="button clear ajax" data-divclassorid="#content" href="edit/group/ event_group /event.id/">Serie <img src="/media/img/edit.png" alt="edit"/></a>
+							<a class="button delete ajax" href="delete/group/event.event_group/">Serie <img src="/media/img/delete.png" alt="delete"/></a>
+						</div>
+					<h4 class="time" style="color: black;">[[ event.start_time ]] bis [[ event.end_time ]]</h4><h5> [[ event.date ]] </h5>
+					<span><b>Leitung:</b> [[ event.lead ]]
+					<a v-if="event.user_is_superuser" class="button ajax show_in_overlay" data-divclassorid="#content" href="/person/edit/[ lead_id ]]/">
+						<img src="/media/img/edit.png" alt="edit"/>
+					</a>
+					<br/>
+					<b>Kategorie:</b> [[ event.category ]]<br/><b>Ort:</b> [[ event.room ]]
+					<br/>
+					<b>Datei Upload</b> <input type="file"></input>
+					<ul class="users" >
+							<li v-for="user in event.user_list">
+								<span v-if="event.user_is_superuser" class="user-data">[[ user.user_name ]] <br/> [[ user.user_phone ]] [[ user.user_mobile ]]</span>
+									<a class="button ajax show_in_overlay" data-divclassorid="#content" v-bind:href="'/person/edit/' + event.user_id + '/'">
+										<img src="/media/img/edit.png" alt="edit"/>
+									</a>
+								<a class="button ajax comment]]active[comment]] comment ajax show_in_overlay" data-divclassorid="#content" href="/add_user_comment/[ id ]]/[ user_id ]]/">
+									<img src="/media/img/comment.png" alt="edit"/>
+									<div class="hidden-comment hidden">[[ event.comment ]]</div>
+								</a>
+								<a v-if="event.user_is_superuser" class="button participating comment [person_not_excused]]not-excused[person_not_excused]] [person_absent]] active absent[person_absent]]" data-comment="[ person_not_excused_comment ]]" href="/user_not_participating/[ id ]/[ user_id ]]/">
+									<img src="/media/img/not-participating.png" alt="abwesend"/>
+									<div class="hidden-comment hidden">[[ event.person_not_excused_comment ]]</div>
+								</a>
+							</li>
+					</ul>
+				</div>
+			</div> 
+		</li>
+	    </event-item>
+<!--
+	<div style="position: fixed; left: 50%; top: 20%;">
+	<ol>
+
+	</ol>
+	 <ol> <li v-for="event in events">
+	   1   [[ event.text ]]
+	  </li></ol>
+	  <p> [[ message ]]</p>
+	  <button v-on:click="reverseMessage">Reverse Message</button>
+	  <p> [[ message ]]</p>
+	  <input v-model="message">
+	</div>
+-->
+</div>
+
+	<script type="text/javascript" src="/media/js/lib/jquery-1.8.2.min.js"></script>
+	<script type="text/javascript" src="/media/js/lib/jquery-ui-1.10.2.custom.min.js"></script>
+	<script type="text/javascript" src="/media/js/lib/mustache.js"></script>
+	<script type="text/javascript" src="/media/js/lib/jquery.cookie.js"></script>
+	<script type="text/javascript" src="/media/js/lib/pace.js"></script>
+	<script type='text/javascript' src="/media/js/lib/jquery.maskedinput.min.js"></script>
+	<script type="text/javascript" src="/media/js/lib/bootstrap.js"></script>
+	<script type='text/javascript' src='/media/js/lib/jquery.mousewheel.min.js'></script>
+	<script type="text/javascript" src="/media/js/lib/timepicker.js"></script>
+
+	<script type="text/javascript" src="/media/js/globals.js"></script>
+	<script type="text/javascript" src="/media/js/slider.js"></script>
+	<script type="text/javascript" src="/media/js/module.overlay.js"></script>
+	<script type="text/javascript" src="/media/js/module.infobox.js"></script>
+	<script type="text/javascript" src="/media/js/vue.js">></script>
+
+	<script type="text/javascript" src="/media/js/utils/date_util.js"></script>
+	<script type="text/javascript" src="/media/js/models/autocomplete.js"></script>
+	<script type="text/javascript" src="/media/js/models/calendar_model.js"></script>
+	<script type="text/javascript" src="/media/js/models/user_search_model.js"></script>
+	<script type="text/javascript" src="/media/js/models/ajax_model.js"></script>
+	<script type="text/javascript" src="/media/js/models/todo_model.js"></script>
+	<script type="text/javascript" src="/media/js/models/menu_model.js"></script>
+	<script type="text/javascript" src="/media/js/views/calendar_view.js"></script>
+	<script type="text/javascript" src="/media/js/module.infobox.js"></script>
+	<script type="text/javascript" src="/media/js/module.buttonEvents.js"></script>
+	<script src="/media/js/overlay/snap.svg-min.js"></script>
+	<script src="/media/js/overlay/modernizr.custom.js"></script>
+	<script src="/media/js/overlay/classie.js"></script>
+	<script src="/media/js/overlay/demo9.js"></script>
+
+	<script>	
+		var ALL_EVENTS = null; /*{% if json_events %}{% autoescape off %}{{ json_events }}{% endautoescape %}{% else %}null{% endif %};*/
+		var csrf_token = "{{csrf_token}}";
+		var SHOW_EVENTS = {% if show_events %}true{% else %}false{% endif %};
+	</script>
+
+	<script>
+
+
+
+		function handle_contract() {
+			var add_user_buttons = $("#add-new-contact, #add-new-billing-contact");
+
+			add_user_buttons.click(function() {
+				var button = $(this);
+				var wrapper = $(this).parent();
+
+				button.addClass("hidden");
+				wrapper.find(".new-user-form").removeClass("hidden");
+				wrapper.find(".user-search").addClass("hidden");
+
+				wrapper.find(".back").click(function() {
+					button.removeClass("hidden");
+					wrapper.find(".new-user-form").addClass("hidden");
+					wrapper.find(".user-search").removeClass("hidden");
+				});
+			});
+		
+			// show contract id if existing
+			var contract_id_field = $("#id_number");
+			var contract_id = contract_id_field.val();
+			if (typeof contract_id != "undefined" && contract_id != "") {
+				contract_id_field.parent().prepend(contract_id);
+			}
+			
+			
+			// show and set billing contact if recently created
+// 			var user_id = $("#id_id").attr("value");
+// 			if (typeof user_id != "undefined" && user_id != "") {
+// 				var select_options = $("#id_billing_contact").find("option");
+// 				select_options.attr('selected', false);
+// 				$.each(select_options, function(key, option) {
+// 					var option = $(option);
+// 					var value = option.val();
+// 					if (value == user_id) {
+// 						var wrapper = option.parent().parent();
+// 						option.attr('selected', true);
+// 						//wrapper.css("display", "block");
+// 						//wrapper.html("<div class=\"hidden\">" + wrapper.html() + "</div>");
+// 						//wrapper.prepend("<label>Rechnungsadresse:</label><input type=\"text\" value=\"" + option.text() + "\"readonly=\"readonly\"/>");
+
+// 						return false;
+// 					}
+// 				});
+// 			}
+		
+			var selected_billing_options = $("#id_billing_contact").find("option:selected");
+			show_select_option(selected_billing_options, null, "Vertragspartner", 'id_billing_contact');
+
+			// show contact if set 
+			var selected_options = $("#id_contact").find("option:selected");
+			show_select_option(selected_options, null, "Schüler", 'id_contact');
+
+			function show_select_option(selected_options, value, label, id) {
+				$.each(selected_options, function(key, option) {
+					var option = $(option);
+					var wrapper = option.parent().parent();
+					var text = "";
+					var newID = "target_" + id
+					var errorDiv = wrapper.find(".error");
+
+					wrapper.css("display", "block");
+					wrapper.html("<div class=\"hidden\">" + wrapper.html() + "</div>");
+
+					if (typeof value != "undefined" && value != null && value != "") {
+						text = value;
+					}
+					else {
+						if (option.text() != "---------") {
+							text = option.text();
+							$.cookie(id, text);
+						}
+					}
+					wrapper.prepend(errorDiv[0].outerHTML + "<label>" + label + ":</label><input id=\"" + newID + "\" type=\"text\" value=\"" + text + "\"readonly=\"readonly\"/>");
+				});
+			}
+		}
+
+		/**
+		 *
+		 * FUNCTION handlePrint
+		 *
+		 */
+		function handlePrint() {
+			var contract_type = $("#contract-type");
+
+			if (typeof contract_type != "undefined") {
+				var text = contract_type.text();
+				text = text.split(" - ")[0];
+				contract_type.text(text);
+			}
+
+			handlePagebreaks();
+
+			function handlePagebreaks() {
+				var events = $(".events");
+				$.each(events, function(key, event_list) {
+					var height = 0;
+					var event_list = $(event_list).find(".event");
+					$.each(event_list, function(key, event){
+						var event = $(event);
+						height = height + parseInt(event.height());
+						if (height > 700) {
+							event.prepend('<div class="new-page"></div>');
+							height = 0;
+						}
+					});
+				});
+			}
+
+			var d1 = new Date();
+			var d = d1.getDate();
+			var m = d1.getMonth() + 1;
+			var y = d1.getFullYear();
+			var dateField = Overlay.SELF.find("#date");
+			var temp = new Date();
+			var dateStr = "";
+			d1 = Date_Util.dateToYMD(d1);
+			dateField.mask("99.99.9999", {reverse: true});
+			dateStr = Date_Util.dateToYMD(temp);
+			dateField.attr("value",dateStr);
+		}
+	</script>
+
 </body>
 </html>

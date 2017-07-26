@@ -62,11 +62,11 @@ def minify(_file, file_type):
 			reading_file = open(path_to_file, "r")
 
 			for line in reading_file:
-				line = re.sub(r'[\t\n\s ]+', " ", line)
-				line = line.replace(" ", "")
-
-				prepared_file.write(line)
-				print line
+				#line = re.sub(r'[\t\n\s ]+', " ", line)
+				line = line.replace(" ", "")		
+				line = line.replace("//", "")
+				if (line != "" and line != " "):
+					prepared_file.write(line)
 			print "...done"
 		except:
 			print "ERROR: could not minify file " + _file

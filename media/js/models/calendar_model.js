@@ -65,6 +65,50 @@
 //}]);
 //console.log("event_app ", event_app);
 
+
+
+$(document).ready(function() {
+
+	Vue.component('event-item', {
+		props: ['event'],
+	});
+
+	var app = new Vue({
+		el: '#app',
+		data: {
+			message: 'Hello Vue.js!',
+			events: []
+		},
+		methods: {
+			set_events: function(events) {
+				this.events = $.parseJSON(events)["2017-05-05"];
+				console.log("reset events ", this.events);
+				Vue.nextTick(() =>{
+					Calendar_Model.render_events();
+					Calendar_Model.reset();
+					$("#loading").hide();
+				});
+			},
+			reverseMessage: function() {
+				this.message = this.message.split('').reverse().join('');
+			}
+		},
+		mounted: function () {
+				Calendar_Model.set_callback(this.set_events);
+				Calendar_Model.print(new Date("2017-5-5"));
+			},
+		delimiters: ['[[',']]'],
+		watch: {
+			events: function () {
+				Vue.nextTick(() =>{
+					console.log("Events CHANGED!", this.events);
+				});
+			}
+		}
+	});
+
+});
+
 var Calendar_Model = (function(_this, $) {
 	var former_day = null;
 	var curr_day = null;
@@ -86,9 +130,16 @@ var Calendar_Model = (function(_this, $) {
 	var day_from_session = null;
 	var SORT_BY = "lead";
 	var found_a_event = false;
-	var ROW_HEIGHT = 58;
+	var ROW_HEIGHT = 58; // TODO make own calendar/timeraster object
 	var users = null;
+	var callback = null;
+	var alert_event_list = [];
+	var WIDTH_OF_ROW = null; // TODO make own calendar/timeraster object
+	var NBR_OF_COLS; // TODO make own calendar/timeraster object
 
+	_this.set_callback = function(method) {
+		callback = method;
+	}
 
 	/**
 	 * 
@@ -104,6 +155,7 @@ var Calendar_Model = (function(_this, $) {
 		curr_day.setMinutes(0);
 		curr_day.setSeconds(0);
 		curr_day.setMilliseconds(0);
+		
 		day_from_session = $.cookie('last_calendar_day');
 
 		// set active day
@@ -116,22 +168,13 @@ var Calendar_Model = (function(_this, $) {
 			active_day = day_from_session;
 		}
 
+		$("#time-raster").show();
+
 		// setup dates and times
 		next_day = new Date(active_day.getTime() + (24 * 60 * 60 * 1000));
 		prev_day = new Date(active_day.getTime() - (24 * 60 * 60 * 1000));
 		next_week_day = new Date(active_day.getTime() + ((24 * 60 * 60 * 1000) * 7));
 		prev_week_day = new Date(active_day.getTime() + ((24 * 60 * 60 * 1000) * 7));
-
-		// setup selectors
-		events = $(".event");
-		action_go_to_next_week = $("#next-week");
-		action_go_to_pre_week = $("#prev-week");
-		action_go_to_next_day = $("#next-day");
-		action_go_to_pre_day = $("#prev-day");
-		action_go_to_today = $("#cal-go-to-today");
-		action_sort_by_lead = $("#cal-action-sort-by-lead");
-		action_sort_by_room  = $("#cal-action-sort-by-room");
-
 		cal_date = $("#cal-date");
 		action_show_date = $("#cal-action-show-date");
 
@@ -140,13 +183,12 @@ var Calendar_Model = (function(_this, $) {
 
 		printCalendar();
 		// show date
-		_this.goToDay(active_day);
 
 		var mainDatepicker = $( "#main-datepicker" );
 		var visible = false;
 		mainDatepicker.datepicker({
 			onSelect: function(dateText, inst) { 
-				_this.goToDay($(this).datepicker( "getDate" )); // as date object
+				render($(this).datepicker( "getDate" )); // as date object
 				 
 			}
 		});
@@ -169,186 +211,187 @@ var Calendar_Model = (function(_this, $) {
 			}
 		});
 
-		console.log("~~~ Calendar_Model initialized ~~~");
 		
-		reset();
-	}
-
-
-	/**
-	 * 
-	 * public FUNCTION loadData
-	 * 
-	 
-	_this.loadData = function() {
-		var days = 0;
-		var doLoad = true;
-		var theDay = new Date();
-		var day_in_the_past = new Date();
-		var day_in_the_future = new Date();
-		var init = true;
-		var days_to_load = 365; // 365
-
-		var load = function() {
-			day = getNexdaytDate();
-			days = 1;
-			$.ajax({
-				type: "POST",
-				url: "/data/",
-				data: { "key": "events", "days": days, "day" : day, "csrfmiddlewaretoken": csrf_token}
-			}).done(function( msg ) {
-				console.log("ALL_EVENTS", ALL_EVENTS);
-				if (ALL_EVENTS != null) {
-					console.log("msg1", msg);
-					console.log("msg2", msg);
-					if ("" + msg != "{}" && $(msg).size() > 1) {
-						msg = msg[0];
-						console.log("msg3 ", msg);
-						$.each(msg, function(msg_day) {
-							if (msg_day != 0) {
-								console.log("msg_day ", msg_day);
-								ALL_EVENTS = [$.extend(true, ALL_EVENTS,msg_day)];
-							}
-						});
-					}
-				}
-				else {
-					console.log("init all events");
-					ALL_EVENTS = {};
-				}
-
-				if (doLoad) {
-					load();
-				}
-			});
-		}
-
-		function getNextDate() {
-			var dateStr = "";
-			if (init == false) {
-				var sessionValue = null;
-
-				if (i % 2){
-					sessionValue = new Date($.cookie('day_in_the_future'));
-					day_in_the_future = (typeof sessionValue != "undefined" && sessionValue != "Invalid Date") ? sessionValue : day_in_the_future;
-					$.cookie('day_in_the_future', day_in_the_future.setDate(day_in_the_future.getDate() + 1));
-					theDay = day_in_the_future;
-				} else {
-					sessionValue = new Date($.cookie('day_in_the_past'));
-					day_in_the_past = (typeof sessionValue != "undefined" && sessionValue != "Invalid Date") ? sessionValue : day_in_the_past;
-					$.cookie('day_in_the_past', day_in_the_past.setDate(day_in_the_past.getDate() - 1));
-					theDay = day_in_the_past;
-				}
-			}
-			init = false;
-
-			/*var d = theDay.getDate();
-			var m = theDay.getMonth();
-			var y = theDay.getYear();
-
-			try {
-				dateStr = dateToString(theDay);
-			} catch(err) {
-				console.log("err", err);
-			}
-
-			return dateStr;
-		}
-
-
-		load();
+		NBR_OF_COLS = $("#time-raster").find("tr").last().find("td").size();
+		
+		console.log("Calendar_Model initialized");
 	};
-	*/
+
+	_this.print = function(date) {
+		console.log("=========== Making Post Request ============");
+		Infobox.showMessage($(".status-info").data("initial"));
+		if(date == null || date == "") {
+			date = new Date("2017-5-5"); // TODO make it better
+		}
+		active_day = date;
+		var string_date =  date.getFullYear() + "-" +  (date.getMonth() + 1) + "-" + (date.getDate()) ;
+		var data = { "key": "events", "days": 1, "day" : string_date };
+		$("#loading .text").html("Loaded UI!<br/>Loading Data...");
+		AJAX.post("/data/", data, callback);
+	};
+
 
 	var dateToString = function(date) {
 		return date.toISOString().slice(0,10);
 	}
-	
-	/**
-	 * 
-	 * public FUNCTION gotToDay
-	 * 
-	 * @param date object with the wanted day
-	 * 
-	 */
-	_this.goToDay = function(date) {
-		var wanted_day = null;
-		var weekday = null;
-		var found_a_event = false;
-		var D = null;
-		var strDate = null;
-		Infobox.showMessage($(".status-info").data("initial"));
 
-		//var string_date = null;
-		//string_date = D + " " + (date.getDate()) + "." + (date.getMonth() + 1) + "." + date.getFullYear();
-
-		strDate =  date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getUTCDate();
-		console.log("~~~~~~~~ GOING TO DATE " + strDate + "~~~~~~~~");
-		// load date 
-
-		$.ajax({
-			type: "POST",
-			url: "/data/",
-			data: { "key": "events", "days": 1, "day" : strDate, "csrfmiddlewaretoken": csrf_token}
-		}).done(function( msg ) {
-			var json = null;
-			console.log("msg ", msg);
-			Infobox.hide();
-			if (ALL_EVENTS == null) {
-				ALL_EVENTS = {};
-			}
-
-			json = $.parseJSON(msg);
-
-			console.log("json", json);
-
-			if ("" + json != "{}" && $(json).size() > 0) {
-				$.each(json, function(key, msg_day) {
-					if (msg_day != 0) {
-						ALL_EVENTS[key] = msg_day;
-					}
-				});
-			}
-			
-			console.log("MADE POST REQUEST!");
-			
-			render(date);
-			
-		});
-
-		active_day = date;
-		console.log("parsing day");
-		wanted_day = date;
-		weekday = new Array("Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag");
-		found_a_event = false;
-		D = weekday[date.getDay()];
-		string_date = D + " " + (date.getDate()) + "." + (date.getMonth() + 1) + "." + date.getFullYear();
-
-		cal_date.text(string_date);
-		events = $(".event");
-
-//		$.each(events, function(key, event) {
-//			event = $(event);
-//			var string_date = event.data("date");
-//			var event_day = new Date(string_date);
-//			if (event_day - wanted_day == 0) {
-//				found_a_event = true;
-//			}
-//		});
-	}
-
-
+	_this.reset = function() {
+		reset();
+	};
 
 	function reset() {
-		console.log("~~~ CALDENDAR MODEL RESETED ~~~");
 		next_day = new Date(active_day.getTime() + (24 * 60 * 60 * 1000));
 		prev_day = new Date(active_day.getTime() - (24 * 60 * 60 * 1000));
 		next_week_day = new Date(active_day.getTime() + ((24 * 60 * 60 * 1000) * 7));
 		prev_week_day = new Date(active_day.getTime() - ((24 * 60 * 60 * 1000) * 7));
 		$.cookie('last_calendar_day', active_day);
-
 		// show hide event details
 		events = $(".event");
+		/**
+		 * TODO find better solution
+		 */
+		Calendar_View.setParticipating();
+		AJAX.resetListener(null);
+		/**
+		 * END TODO find better solution
+		 */
+		setup_listener();
+		render(active_day);
+		console.log("~~~ CALDENDAR MODEL RESETED ~~~");
+	}
+
+	function setup_listener() {
+		events = $(".event");
+		// setup selectors
+		action_go_to_next_week = $("#next-week");
+		action_go_to_pre_week = $("#prev-week");
+		action_go_to_next_day = $("#next-day");
+		action_go_to_pre_day = $("#prev-day");
+		action_go_to_today = $("#cal-go-to-today");
+		action_sort_by_lead = $("#cal-action-sort-by-lead");
+		action_sort_by_room  = $("#cal-action-sort-by-room");
+
+		//action_go_to_today.click(function() {
+		//	_this.print(curr_day);
+		//});
+		action_go_to_next_week.click(function() {
+			_this.print(next_week_day);
+		});
+		action_go_to_pre_week.click(function() {
+			_this.print(prev_week_day);
+		});
+		action_go_to_next_day.click(function() {
+			_this.print(next_day);
+		});
+		action_go_to_pre_day.click(function() {
+			_this.print(prev_day);
+		});
+		action_sort_by_lead.click(function() {
+			SORT_BY = "lead";
+			_this.print(active_day);
+		});
+		action_sort_by_room.click(function() {
+			SORT_BY = "room";
+			_this.print(active_day);
+		});
+
+		action_show_date.click(function() {
+			var string_date = $("#cal-go-to-date").val();
+			string_date = string_date.split(".");
+			string_date = string_date[2] + "-" + string_date[1] + "-" + string_date[0];
+			var wanted_date = new Date(string_date);
+			active_day = wanted_date;
+			reset();
+		});
+
+		$(".button.delete").click(function(e) {
+
+		});
+		$(".event").dblclick(function() {
+			var event = $(this).find(".hidden-data");
+			if (event.is(':visible')) {
+				event.hide();
+			}
+			else {
+				event.show();
+			}
+		});
+
+		function handleDragStop( drpEvent, event ) {
+			var cols = 10;
+			var nbr_of_rooms = 11;
+			var event_obj = $(drpEvent.target);
+			var x = parseInt( event.offset.left );
+			var y = parseInt( event.offset.top );
+			console.log("drpEvent " + drpEvent);
+			var user_screen_width = $(window).width();
+			var timeRasterHeight = $("#time-raster").height();
+			var event_width = user_screen_width / nbr_of_rooms;
+			var event_height = 58;
+			x = x + (event_width/3);
+			var percent =  ((x * cols) / user_screen_width);
+			var newRoom = Math.round(percent);
+			newRoom = ((newRoom == 0) ? 1 : newRoom);
+			var newX = event_width * newRoom;
+			var nbrOfQA = Math.round(y / event_height);
+			var shouldY = (nbrOfQA*event_height) - 2;
+			
+			var event_id = event_obj.data("id");
+			var event_date = event_obj.data("date");
+			var event_start_time = event_obj.data("start_time");
+			var event_end_time = event_obj.data("end_time");
+			var event_room = event_obj.data("room");
+			var event_users = event_obj.data("users");
+			var event_lead = event_obj.data("lead");
+			var event_category = event_obj.data("category");
+			var event_event_group = event_obj.data("event_group");
+
+			var new_start_time = null;
+			var new_end_time = null;
+			new_start_time = "" + ((((nbrOfQA * 15) + (4*8*15)) / 60) - 0.25);
+			new_start_time = parse_hour(new_start_time);
+			console.log("new_start_time " + new_start_time);
+			var duration = (parseInt(event_end_time) - parseInt(event_start_time)) * 60;
+			new_end_time = ""+ (new_start_time[1] + duration)/60; //  (hours + (duration % 60)) + " " + 
+			new_end_time = parse_hour(new_end_time);
+			console.log("new_end_time " + new_end_time);
+			var start_hour = new_start_time[0];
+			new_start_time = start_hour + ":" + new_start_time[1];
+			var end_hours = (parseInt(start_hour) + parseInt(new_end_time[0]));
+			var end_minutes = (parseInt(new_end_time[1]) + parseInt(new_start_time[1]));
+			end_minutes = (end_minutes == 0) ? end_minutes : end_minutes - 3; // TODO why neccecary?
+			end_minutes =  end_hours + ":" + end_minutes;
+			console.log("new_start_time " + new_start_time + " new_end_time " + new_end_time + " duration " + duration + " " + (duration % 60)); 
+			event_date = event_date.split(".");
+			event_date = event_date[2] + "-" + event_date[1] + "-" + event_date[0];
+			console.log("event_date " + event_date);
+
+			event_obj.css("left", newX );
+			event_obj.css("top", shouldY);
+			//05.05.2017
+			//'2006-10-25 14:30'
+			var data = { 
+				"id" : parseInt(event_id),
+				"name" : "Lauber Mathe ",
+				"date" : event_date + " " + new_start_time,
+				"start_time" : event_date + " " + new_start_time,
+				"end_time" : event_date + " "  + event_end_time,
+				"room" : newRoom,
+				"users" : [1],
+				"lead" : parseInt(event_lead),
+				"category" : parseInt(event_category),
+				"event_group": null
+			};
+
+			AJAX.post("/api/event/" + event_id + "/", JSON.stringify(data), null);
+		}
+		console.log("making " + $(".event").length + " events draggable");
+		$(".event").draggable({
+			containment : "#time-raster",
+			cursor : "move",
+			snap : "#time-raster td.row",
+			stop: handleDragStop
+		});
 		events.mouseenter(function() {
 			var event = $(this);
 			var hidden_data = event.find(".hidden-data");
@@ -363,196 +406,72 @@ var Calendar_Model = (function(_this, $) {
 			$(".hidden-data").addClass("hidden");
 		});
 
-
-		$(".button.delete").click(function(e) {
-
-		});
-		$(".event").dblclick(function() {
-			var event = $(this).find(".hidden-data");
-			if (event.is(':visible')) {
-				event.hide();
-			}
-			else {
-				event.show();
-			}
-		});
-		$(".event").draggable({
-			containment : "#time-raster",
-			cursor : "move",
-			snap : "#time-raster td.row",
-			stop: handleDragStop
-		});
-		function handleDragStop( event, ui ) {
-		  var x = parseInt( ui.offset.left );
-		  var y = parseInt( ui.offset.top );
-		  console.log("x " + x + " Y " + y);
-		  var rooms = 11;
-		  var width = $(window).width() / rooms;
- 		  var curr_x = x + (width/3);
-		  var percent =  ((curr_x * 10) / $(window).width());
-		  var newRoom = Math.round(percent);
-		  newRoom = ((newRoom == 0) ? 1 : newRoom);
-		  var newX = width * newRoom;
-		  console.log("(parseInt(y)!==y) " + (parseInt(y)!==y));
-		          var newY =  y ;// anzkästen_y * 58;
-		 	  console.log("y " + y + " newY " + newY + "position " + ui.position.top + " percent " + percent);
-		
-		  $(event.target).css("left", newX);
-		}
-		/**
-		 * TODO find better solution
-		 */
-		Calendar_View.setParticipating();
-		AJAX.resetListener(null);
-		/**
-		 * END TODO find better solution
-		 */
+		console.log("RESETED LISTENDER!",$("#app .event"));
 	}
 
-	function setup_listener() {
-		action_go_to_today.click(function() {
-			_this.goToDay(curr_day);
-		});
-		action_go_to_next_week.click(function() {
-			_this.goToDay(next_week_day);
-		});
-		action_go_to_pre_week.click(function() {
-			_this.goToDay(prev_week_day);
-		});
-		action_go_to_next_day.click(function() {
-			console.log("going to next day");
-			_this.goToDay(next_day);
-		});
-		action_go_to_pre_day.click(function() {
-			_this.goToDay(prev_day);
-		});
-		action_sort_by_lead.click(function() {
-			SORT_BY = "lead";
-			_this.goToDay(active_day);
-		});
-		action_sort_by_room.click(function() {
-			SORT_BY = "room";
-			_this.goToDay(active_day);
-		});
+	var parse_hour = function(timeHour) {
+			timeHour = timeHour.split(".");
+			var hours = timeHour[0];
+			hours = ((hours<9) ? "0" + hours : hours);
+			var minutes = timeHour[1];
+			if (minutes != null && minutes > 5) {
+				minutes = (minutes * 0.6);
+				minutes = ((minutes<9) ? "0" + minutes : minutes);
+			} else {
+				minutes = "00";
+			}
 
-		action_show_date.click(function() {
-			var string_date = $("#cal-go-to-date").val();
-			string_date = string_date.split(".");
-			string_date = string_date[2] + "-" + string_date[1] + "-" + string_date[0];
-			var wanted_date = new Date(string_date);
-			_this.goToDay(wanted_date);
-			active_day = wanted_date;
-			reset();
-		});
-	}
+			return [hours, minutes];
+	};
 
-	function render_events(events, nbr_of_keys){
-
-		var now = new Date();
-		var go_to_minuts = now.getMinutes();
-		var go_to_hours = now.getHours();
-		var page = $("#page");
-
-		if (go_to_hours > 18) {
-			go_to_hours = 18;
-		}
-
-		var go_to = calc_y(go_to_hours, go_to_minuts);
-		//$('html,body').animate({scrollTop:go_to}, 2000,'swing');
-
-		$("#time-raster").show();
-		page.css("width", "100%");
+	/**
+	 * sets the x, y, widht and height of a elment
+         *
+	**/
+	_this.render_events = function() {
 		$("#cal-message").html("");
+		WIDTH_OF_ROW = Math.round(NBR_OF_COLS > 0) ? 100 / NBR_OF_COLS : 140;
 
-		if (nbr_of_keys > 12) {
+		// TODO better solution
+		if (NBR_OF_COLS > 12) {
 			page.css("width", "140%");
 		}
 
-		var events = $(".event");	
-		
-		var event_list = [];
-
+		events = $(".event");	
+		console.log("setting xy for ", events);
 		$.each(events, function(key, event) {
-			var extra = 0;
-			var top = 0;
-			var room = 1;
-			var nbrOfRooms = 6;
-			var height = 240;
-			var pageWidth = 1400;
-			var time = null;
-			var start_time = null;
-			var start_time_hours = null;
-			var start_time_minutes = null;
-			var end_time = null;
-			var end_time_hours = null;
-			var end_time_minutes = null;
-			var value = null;
-			var extra_height = null;
-			var width_of_event = null;
-			var left = null
-			var currPageWidth = null;
-			var ratio = null;
-
 			event = $(event);
-			time = event.find(".time").first();
-			time = time.text().split(" bis ");
-			room = event.data("room");
-			start_time = time[0];
-			start_time_hours = parseInt(start_time.split(":")[0]);
-			start_time_minutes = parseInt(start_time.split(":")[1]);
-			end_time = time[1];
-			end_time_hours = parseInt(end_time.split(":")[0]);
-			end_time_minutes = parseInt(end_time.split(":")[1]);
-			value = start_time_hours+":"+start_time_minutes+"R"+room;
-			extra_height = getExtaHeight(start_time_hours, start_time_minutes, end_time_hours, end_time_minutes);
-			nbrOfRooms = $("#time-raster").find("tr").last().find("td").size();
-			height = parseInt(extra_height);
-			width_of_event = Math.round(nbrOfRooms > 0) ? 100 / nbrOfRooms : 140;
-			top = 0;
-			lead = event.data("lead");
-			var x = (calc_x(room, width_of_event));
-			var count = 1;
-			if(SORT_BY=="lead"){
-				$('.room').each(function(){
-					if($(this).text().toUpperCase().indexOf(lead.toUpperCase()) != -1){
-					      	x = (calc_x(count, width_of_event));
-						console.log("HURRAA !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! " + count + " " + lead + " " + room + " " + width_of_event + " " + x, event);
-						 return false;
-					}
-					count++;
-				});
-			
-			
-				
-			}
-			console.log("X " + x + " " + width_of_event);
-			left = x;
-			pageWidth = 1400;
-			currPageWidth = $(window).width();
-			ratio = (100 - (currPageWidth * 100 / pageWidth)) / 2;
+			var height = getHeight(event);
+			var x = calc_x(event);
+			var y = calc_y(event);
+			checkForAlert(event);
 
-			if ($.inArray(value, event_list) > -1) {
-				event.addClass("alert");
-				extra = 40;
-			}else{
-				event_list[key] = value;
-			}
-
-			top = (calc_y(start_time_hours, start_time_minutes) + extra);
-			top = top - 5;
-			width_of_event = (nbrOfRooms > 0) ? width_of_event + "%" : width_of_event + "px";
 			event.css({
 				"position"	: "absolute",
-				"width"		: width_of_event,
-				"left"		: left + "%",
-				"top"		: top + "px",
+				"width"		: WIDTH_OF_ROW + "%",
+				"left"		: x + "%",
+				"top"		: y + "px",
 				"height"	: height + "px"
 			});
 		});
 	};
 
+	var checkForAlert = function(event) {
+		var room = event.data("room");
+		var start_time = event.data("start_time");
+		var end_time = event.data("end_time");
+		var value = start_time + end_time + "R" + room;
+
+		if ($.inArray(value, alert_event_list) > -1) {
+			event.addClass("alert");
+			event.css("height",(event.height() + 40));
+		}else{
+			alert_event_list[value] = value;
+		}
+	}
+
 	function render(date) {
-		console.log("rendering...");
+		console.log("rendering...", date);
 		var final_output = "";
 		var template_events_by_teacher = '<ul class="events">';
 		var events_by_day =  null;
@@ -561,16 +480,13 @@ var Calendar_Model = (function(_this, $) {
 
 		found_a_event = false;
 
-		console.log("got the pool", ALL_EVENTS);
-
 		if (ALL_EVENTS != null && ! $.isEmptyObject(ALL_EVENTS)) {
 			events_by_day = ALL_EVENTS;
 		}
 
 		if (events_by_day != null) {
 			//events_by_day = $.parseJSON(events_by_day);
-			console.log("date ", date);
-			event_by_date = events_by_day["2014-09-29"];
+			//event_by_date = events_by_day["2014-09-29"];
 			$.each(events_by_day, function(key, event) {
 				nbrOfEvents++;
 				if ($(event).size() > 1) {
@@ -587,6 +503,9 @@ var Calendar_Model = (function(_this, $) {
 
 
 		function print(passed_event) {
+			if (typeof(passed_event) === "undefined") {
+				return;
+			}
 			var _date = passed_event.date_as_utc;
 			var lead = passed_event.lead;
 			var data = "";
@@ -662,103 +581,71 @@ var Calendar_Model = (function(_this, $) {
 		template_events_by_teacher += "</ul>";
 		events_by_day = {"events" : events_by_day};
 
-		console.log("==========> printing events!");
-
-		$("#events").html(template_events_by_teacher);
+		//$("#events").html(template_events_by_teacher);
 		
 		if (! found_a_event) {
 			$("#cal-message").html("<br/><br/><h3>Es gibt bisher keine Stunden an diesem Tag!</h3>");
+			return;
 		}
 		else if (SORT_BY == "lead") {
-			render_events(events, nbr_of_keys);
+			_this.render_events();
 		}
 		else if (SORT_BY == "room") {	
-			render_events(events, nbr_of_keys);
+			_this.render_events();
 		}
 		else {
 			$("#time-raster").hide();
 			$("#page").css("width", "140%");
 			$('html,body').animate({scrollTop:0}, 2000,'swing');
 		}
-		reset();
 	}
 
-	function getExtaHeight(hoursA, minutesA, hoursB, minutesB) {
-		 // 240px = 45min
-		var minute_height = ROW_HEIGHT/15/60;
-		var height = 0;
-		console.log("hoursA " + hoursA + " minutesA " + minutesA + " hoursB " + hoursB + " minutesB " + minutesB);
-		var delta = hoursA * 60 + minutesA - hoursB * 60 - minutesB;
-		console.log("delta", delta);
-		var x = 4;//3.4;
-		delta = (delta > 0) ? delta : delta * -1;
+	var getHourOrMinutes = function(stringDate, hours) {
+		var parts = stringDate.split(":");
+		return ((hours) ? parseInt(parts[0]) : parseInt(parts[1]));
+	}
 
-		if (delta >= 15) {
-			var alpha = (hoursB * 60 * x - minutesB * x) - (hoursA * 60 * x + minutesA * x);
-			alpha = delta * minute_height;
-			alpha = (alpha == 0) ? 1 : alpha;
-			console.log("alpha", alpha);
-			height = (ROW_HEIGHT * alpha);
-			height = height + (height * 0.0338);
-//			if (alpha == 0) {
-//				height = (240/3);
-//			}
-//			else {
-//				height = (alpha - 240);
-//			}
-			height = (height > 0) ? height : height * -1;
-		}
-		else {
+	var getHeight = function(event) {
+		var start_time = event.data("start_time");
+		var end_time = event.data("end_time");
+		var start_time_hours = getHourOrMinutes(start_time, true);
+		var start_time_minutes = getHourOrMinutes(start_time, false);
+		var end_time_hours = getHourOrMinutes(end_time, true);
+		var end_time_minutes = getHourOrMinutes(end_time, false);
+		var durationMin = (end_time_hours * 60 + end_time_minutes) - (start_time_hours * 60 + start_time_minutes);
+		durationMin = (durationMin < 0) ? durationMin * -1 : durationMin;
+		var height = Math.floor(durationMin / 15) * ROW_HEIGHT;	
+
+		if (height < ROW_HEIGHT) {
 			height = ROW_HEIGHT;
 		}
-	
-		return height;// changed 20170510 height;
+
+		return height;
 	}
 
-	function calc_y(hours, minutes) {
+	function calc_y(event) {
+		var start_time = event.data("start_time");
+		var hours = getHourOrMinutes(start_time, true);
+		var minutes =  getHourOrMinutes(start_time, false);
 		var minute_height = ROW_HEIGHT/15;
 		var yPX = 0;
 		var minutesPX = 0;
-		var elem_height = 140 + 10 + 10;
 		var start_hour = 8;
 		var time_in_minutes = ((hours * 60 + minutes) - start_hour * 60);
-		var x = (time_in_minutes * (15/time_in_minutes));
 		var border_widht = 4;
 
 		if (hours < start_hour) {
 			hours = hours + 12;
 		}
-		
-		console.log("---- minute_height ---- ", minute_height);
-		console.log("---- (hours * 60 + minutes) ---",(hours * 60 + minutes));
 
-		yPX = (time_in_minutes * minute_height) + x + border_widht;
-
-		/*hours = hours - 10;
-		hours = (hours == 0) ? 1 : hours;
-
-		
-		if (minutes > 0) {
-			var factor = (minutes / 25);
-			var x = elem_height / 4;
-			minutesPX = factor * x;
-		}
-		
-		yPX = (hours) * elem_height + minutesPX;*/
+		yPX = (time_in_minutes * minute_height) + ROW_HEIGHT + border_widht;
 
 		return yPX;
 	}
 
-	function calc_x(room, elem_width) {
-//		var xPX = 0;
-//		var elem_width = 140 + 10 + 10;
-//		xPX = room * elem_width;
-//
-//		return xPX;
-		var x = 0;
-		x = room * elem_width;
-		
-		return x;
+	function calc_x(event) {
+		var room = event.data("room");
+		return room * WIDTH_OF_ROW;
 	}
 
 	var sort_by = function(field, reverse, primer){

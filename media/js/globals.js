@@ -15,6 +15,8 @@ $(document).ready(function() {
 	// TODOS
 	Todo_Model.init();
 	
+	// SEARCH
+	Search_Model.init();
 
 	// AJAX
 	AJAX.resetListener();
@@ -54,12 +56,11 @@ $(document).ready(function() {
 
 $(window).load(function() {
 	// CALENDAR
+	init_load_custom();
 	Calendar_Model.init();
-	init_globals();
-
 });
 	
-function init_globals() {
+function init_load_custom() {
 
 			var d1 = new Date();
 			var d = d1.getDate();

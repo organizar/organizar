@@ -59,10 +59,8 @@ var Search_Model = (function(_this, $) {
 	// for contract
 	var add_select = function(select_id, input) {
 		var select = $("body").find("#" + select_id);
-		console.log("input", input);
 		var resultTarget = searchArea.find(".results");
 		var values = valueArea.find(".search-value");
-		console.log("select #" + select_id, select);
 		//select.parent().hide();
 	
 		input.click(function() {
@@ -74,9 +72,6 @@ var Search_Model = (function(_this, $) {
 			var currResultTarget = currInput.parent().find(".results");
 			var inputTarget = $("#target_" + select_id);
 			var wantedValue = currInput.val();
-	
-			console.log("inputTarget ", inputTarget);
-			console.log("target id " + "target_" + select_id);
 	
 			currResultTarget.html("");
 	
@@ -103,13 +98,11 @@ var Search_Model = (function(_this, $) {
 									option.attr('selected', false);
 									currResultTarget.html("<b>Schüler " + name + " entfernt!</b>");
 									inputTarget.val("");
-									console.log("deselected ", option);
 								}
 								else {
 									option.attr('selected', true);
 									currResultTarget.html("<b>Schüler " + name + " hinzugefügt!</b>");
 									inputTarget.val(name);
-									console.log("selected ", option);
 								}
 								return false;
 							}
