@@ -14,6 +14,7 @@ var Overlay = (function(options, $) {
 	}
 	
 	Overlay.loadContent = function(url, data){
+		console.log("module overlay: loading '" + url + "'");
 		reset();
 		if (data == "" || typeof data == "undefined" || data == null) {
 			data = {}
@@ -116,7 +117,7 @@ var Overlay = (function(options, $) {
 
 	var handleFormPosts = function() {
 		var forms = $("#overlay-content").find("form");
-		console.log("~~~~~~ HANDLING FORM POST ~~~~~~");
+		console.log("~~~~~~ HANDLING FORM POST ~~~~~~", forms);
 		$.each(forms, function(key, form) {
 			var form = $(form);
 			var href = form.data("default-action");

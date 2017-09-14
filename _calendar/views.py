@@ -140,7 +140,7 @@ def placeholder( request, user_id = None, event_id = None, action = None ):
 		################################################################
 		# EVENTS
 		################################################################
-		if event_id != None:
+		if event_id != None and event != None:
 			form_type = "event"
 
 
@@ -211,6 +211,7 @@ def placeholder( request, user_id = None, event_id = None, action = None ):
 						print ( traceback.format_exc() )
 
 			elif action == "delete":
+				print(str(event));
 				event.delete()
 				set_session_var( "status_info", "Stunde erfolgreich gelöscht!", request )
 
@@ -785,7 +786,7 @@ def edit_event(request, id=None):
 				print("saved " + str(serialized.validated_data))
 			else:
 				print(serialized.errors)
-				print("not valid!" + str())
+				print("not valid!" + str(event_data))
 
 		except:
 			print ( traceback.format_exc() )

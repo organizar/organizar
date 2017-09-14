@@ -4,12 +4,15 @@ import traceback
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User, Group
-from django.http import HttpResponse
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.template import RequestContext, loader
 from _utils.template_utils import set_session_var
 from _user.forms import Person_Form, User_Form, Billing_Contact_Form
 from _user.models import Person, Billing_Contact
+from _user._serializer.UserSerializer import UserSerializer
+from rest_framework.decorators import api_view
+from rest_framework.decorators import parser_classes
+from rest_framework.parsers import JSONParser
 
 def menu_handle_user(request=None):
 	context = RequestContext(request, {
@@ -18,6 +21,49 @@ def menu_handle_user(request=None):
 	template = loader.get_template('base/menu/user.html')
 
 	return HttpResponse(template.render(context))
+
+@api_view(['POST', 'GET'])
+def edit_user(request, id=None):
+	if (id == None):
+		return
+	event = User.objects.get(id=id)
+	if request.method == 'GET':
+		serialized = UserSerializer(instance=event, many=False)
+	
+	if request.method == 'POST':
+		try:
+			event_data = request.data["data"]
+			json_event = json.loads(event_data)
+			serialized = UserSerializer(instance=event, data=json_event, many=False)
+			if(serialized.is_valid()):
+				serialized.save()
+				print("saved " + str(serialized.validated_data))
+			else:
+				print(serialized.errors)
+				print("not valid!" + str())
+
+		except:
+			print ( traceback.format_exc() )
+			print("error saving event"  + event.name)
+	return JsonResponse(serialized.data, safe=False)
+
+@api_view(['POST', 'GET'])
+@parser_classes((JSONParser,))
+def all_users(request, from_date=None, to_date=None):
+    """
+    List all code events, or create a new event.
+    """
+    if from_date != None and to_date != None:
+	from_date = datetime.strptime(from_date, '%Y-%m-%d')
+        to_date = datetime.strptime(to_date, '%Y-%m-%d')
+        events = User.objects.filter(date__range=[from_date, to_date])
+    else:
+	events = User.objects.all()
+        
+    serializer = UserSerializer(events, many=True)
+
+    return JsonResponse(serializer.data, safe=False)
+
 
 # GET PERSON
 def get_person_or_none(user_id=None, user=None):

@@ -39,7 +39,7 @@ class Category( models.Model ):
 	class Meta:
 		verbose_name = "Fach"
 		verbose_name_plural = "Fächer"
-
+# Deprecated
 class Event_Group( models.Model ):
 	name = models.CharField( "Name", max_length = 200 )
 	start_date = models.DateTimeField( "Beginn", default = datetime.date.today, blank = True, null = True )
@@ -55,17 +55,15 @@ class Event_Group( models.Model ):
 class Event( models.Model ):
 	name = models.CharField( "Name", max_length = 200, blank = True, null = True )
 	#comment = models.CharField( "Comment", max_length = 500, blank = True, null = True )
-	date = models.DateTimeField( "Tag", default = datetime.date.today )
+	date = models.DateTimeField( "Tag", default = datetime.date.today ) # DEPRECATED
 	start_time = models.DateTimeField( "Beginn", default = datetime.date.today, blank = True, null = True )
 	end_time = models.DateTimeField( "Ende", default = datetime.date.today, blank = True, null = True )
 	room = models.ForeignKey( Room, blank = True, null = True )
 	users = models.ManyToManyField( User, blank = True, null = True, related_name = 'user_participants' )
 	lead = models.ForeignKey( User, blank = True, null = True, related_name = 'user_lead' )
-	# pos_x = models.IntegerField("X Koordinate", blank=True, null=True)
-	# pos_y = models.IntegerField("Y Koordinate", blank=True, null=True)
 	category = models.ForeignKey( Category, blank = True, null = True )
-	# classes = models.CharField("CSS Klassen", max_length=200, blank=True, null=True)
-	event_group = models.ForeignKey( Event_Group, blank = True, null = True, related_name = 'event_group' )
+	event_group = models.ForeignKey( Event_Group, blank = True, null = True, related_name = 'event_group' ) # deprecated => use hash
+        #repeats = enum
 
 	def get_user( self ):
 		print ( "YES" )

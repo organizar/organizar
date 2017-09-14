@@ -1,4 +1,4 @@
-$.fn.autocomplete = function() {
+$.fn._autocomplete = function() {
 
 	return this.each(function() {
 		var searchArea = $(this);

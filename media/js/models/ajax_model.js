@@ -34,10 +34,10 @@ var AJAX = (function(_this, $) {
 	};
 
 	_this.post = function(url, data, callback, divClassOrID) {
-		console.log("~~~~~~~~~~ REQUEST POST ~~~~~~~~~~~~");
+		console.log("::: REQUEST POST TO " + url ,data);
 
 		if(data === null){
-			return;
+			console.log("WARN: request has no data!");
 		} 
 		if(typeof data !== 'object') {
 			data = {data};
@@ -66,12 +66,25 @@ var AJAX = (function(_this, $) {
 				console.log("~~~ AJAX MODEL: POST: DID NOT FILTER");
 			}
 			else {
-				result = $(result);
 				var org_result = result;
-				result = result.filter(divClassOrID);
-				if ($.isPlainObject(result) || result.length == 0) {
-					result = org_result.find(divClassOrID);
-					console.log("searching emtpty result", result);
+				
+				console.log("result 0 ", result);
+				if($.type(result) === "string") {
+					result = result.replace(/^[\s\S]*<body.*?>|<\/body>[\s\S]*$/ig, '');
+					console.log("result 01 ", result);
+					result = $.parseHTML(result);
+					console.log("result 1 ", result);
+					console.log("divClassOrID " + divClassOrID);
+					result = $(result).find(divClassOrID);
+					console.log("result 2 ", result);
+					if (result.length == 0) {
+						result = result.find(divClassOrID);
+						console.log("searching emtpty result");
+						return;
+					}
+					else {
+						console.log("got result!");		
+					}
 				}
 			}
 			callback(result);
@@ -107,6 +120,9 @@ var AJAX = (function(_this, $) {
 			
 			if (clickedLink.hasClass("delete") && ! clickedLink.hasClass("checked")) {
 				_this.confirm_delete(clickedLink);
+			}
+			else if (clickedLink.hasClass("ajax") && clickedLink.hasClass("post")) {
+				AJAX.post(href, null, Overlay.showData, divClassOrID);
 			}
 			else if (clickedLink.hasClass("ajax")) {
 				if (typeof divClassOrID != "undefined") {

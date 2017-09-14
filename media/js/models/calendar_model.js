@@ -66,18 +66,19 @@
 //console.log("event_app ", event_app);
 
 
-
+var app = null;
 $(document).ready(function() {
 
 	Vue.component('event-item', {
 		props: ['event'],
 	});
 
-	var app = new Vue({
+	app = new Vue({
 		el: '#app',
 		data: {
 			message: 'Hello Vue.js!',
-			events: []
+			events: [],
+			users: [],
 		},
 		methods: {
 			set_events: function(events) {
@@ -85,12 +86,18 @@ $(document).ready(function() {
 				console.log("reset events ", this.events);
 				Vue.nextTick(() =>{
 					Calendar_Model.render_events();
-					Calendar_Model.reset();
+					Calendar_Model.reset(this.events);
 					$("#loading").hide();
 				});
 			},
 			reverseMessage: function() {
 				this.message = this.message.split('').reverse().join('');
+			},
+			synchronze_event: function(event, vue_event) {
+				Vue.nextTick(() =>{
+					event = $(event);
+					console.log("vue is saving r00m " + event.data("end_time") + " vs " + vue_event["end_time"], event.data("id"));
+				});
 			}
 		},
 		mounted: function () {
@@ -102,6 +109,11 @@ $(document).ready(function() {
 			events: function () {
 				Vue.nextTick(() =>{
 					console.log("Events CHANGED!", this.events);
+				});
+			},
+			message : function() {
+				Vue.nextTick(() =>{
+					console.log("Message CHANGED!", this.message);
 				});
 			}
 		}
@@ -235,11 +247,11 @@ var Calendar_Model = (function(_this, $) {
 		return date.toISOString().slice(0,10);
 	}
 
-	_this.reset = function() {
-		reset();
+	_this.reset = function(vue_events) {
+		reset(vue_events);
 	};
 
-	function reset() {
+	function reset(vue_events) {
 		next_day = new Date(active_day.getTime() + (24 * 60 * 60 * 1000));
 		prev_day = new Date(active_day.getTime() - (24 * 60 * 60 * 1000));
 		next_week_day = new Date(active_day.getTime() + ((24 * 60 * 60 * 1000) * 7));
@@ -255,12 +267,13 @@ var Calendar_Model = (function(_this, $) {
 		/**
 		 * END TODO find better solution
 		 */
-		setup_listener();
+		setup_listener(vue_events);
 		render(active_day);
+		$(".datepicker").datepicker( "option", "dateFormat", "HH:MM:SS");
 		console.log("~~~ CALDENDAR MODEL RESETED ~~~");
 	}
 
-	function setup_listener() {
+	function setup_listener(vue_events) {
 		events = $(".event");
 		// setup selectors
 		action_go_to_next_week = $("#next-week");
@@ -295,6 +308,17 @@ var Calendar_Model = (function(_this, $) {
 			_this.print(active_day);
 		});
 
+		$(".event .button.save").click(function() {
+			console.log($(this));
+			var uri = $(this).data("uri");
+			console.log("Uri: " + uri);
+			var event = $(this).parent().parent().parent().parent();
+			console.log("event ", event.data("end_time"));
+			var data = parseEventData(event);
+			console.log("data = ", data);
+			AJAX.post(uri, JSON.stringify(data), null);
+		});
+
 		action_show_date.click(function() {
 			var string_date = $("#cal-go-to-date").val();
 			string_date = string_date.split(".");
@@ -318,80 +342,120 @@ var Calendar_Model = (function(_this, $) {
 		});
 
 		function handleDragStop( drpEvent, event ) {
-			var cols = 10;
-			var nbr_of_rooms = 11;
+			console.log("vue events ", vue_events);
+			
+			//05.05.2017
+			//'2006-10-25 14:30'
 			var event_obj = $(drpEvent.target);
 			var x = parseInt( event.offset.left );
 			var y = parseInt( event.offset.top );
-			console.log("drpEvent " + drpEvent);
-			var user_screen_width = $(window).width();
-			var timeRasterHeight = $("#time-raster").height();
-			var event_width = user_screen_width / nbr_of_rooms;
 			var event_height = 58;
-			x = x + (event_width/3);
-			var percent =  ((x * cols) / user_screen_width);
-			var newRoom = Math.round(percent);
-			newRoom = ((newRoom == 0) ? 1 : newRoom);
-			var newX = event_width * newRoom;
 			var nbrOfQA = Math.round(y / event_height);
-			var shouldY = (nbrOfQA*event_height) - 2;
-			
+			var vue_event = null;
 			var event_id = event_obj.data("id");
-			var event_date = event_obj.data("date");
-			var event_start_time = event_obj.data("start_time");
-			var event_end_time = event_obj.data("end_time");
-			var event_room = event_obj.data("room");
-			var event_users = event_obj.data("users");
-			var event_lead = event_obj.data("lead");
-			var event_category = event_obj.data("category");
-			var event_event_group = event_obj.data("event_group");
 
-			var new_start_time = null;
-			var new_end_time = null;
-			new_start_time = "" + ((((nbrOfQA * 15) + (4*8*15)) / 60) - 0.25);
-			new_start_time = parse_hour(new_start_time);
-			console.log("new_start_time " + new_start_time);
-			var duration = (parseInt(event_end_time) - parseInt(event_start_time)) * 60;
-			new_end_time = ""+ (new_start_time[1] + duration)/60; //  (hours + (duration % 60)) + " " + 
-			new_end_time = parse_hour(new_end_time);
-			console.log("new_end_time " + new_end_time);
-			var start_hour = new_start_time[0];
-			new_start_time = start_hour + ":" + new_start_time[1];
-			var end_hours = (parseInt(start_hour) + parseInt(new_end_time[0]));
-			var end_minutes = (parseInt(new_end_time[1]) + parseInt(new_start_time[1]));
-			end_minutes = (end_minutes == 0) ? end_minutes : end_minutes - 3; // TODO why neccecary?
-			end_minutes =  end_hours + ":" + end_minutes;
-			console.log("new_start_time " + new_start_time + " new_end_time " + new_end_time + " duration " + duration + " " + (duration % 60)); 
+			$.each(vue_events, function() {
+				if(this["id"] == event_id) {
+					vue_event = this;
+					return false;
+				}
+			});
+
+			setXAndY(event_obj, vue_event);
+			setNewStartAndEndTime(event_obj,vue_event);
+			app.synchronze_event(event_obj, vue_event);
+			var data = parseEventData(event_obj);
+			AJAX.post("/api/event/" + event_obj.data("id") + "/", JSON.stringify(data), null);
+
+			function setXAndY(event, vueEvent) {
+				var cols = 10;
+				var nbr_of_rooms = 11;
+				var user_screen_width = $(window).width();
+				var timeRasterHeight = $("#time-raster").height();
+				var event_width = user_screen_width / nbr_of_rooms;
+				x = x + (event_width/3);
+				var percent =  ((x * cols) / user_screen_width);
+				var newRoom = Math.round(percent);
+				newRoom = ((newRoom == 0) ? 1 : newRoom);
+				var newX = event_width * newRoom;
+				var shouldY = (nbrOfQA*event_height) - 2;
+		
+				vueEvent.room = newRoom;
+				event.data("room", newRoom);
+				event.css("left", newX );	
+				event.css("top", shouldY);
+			};
+		
+			function setNewStartAndEndTime(event,vueEvent) {
+				var new_start_time = "" + ((((nbrOfQA * 15) + (4*8*15)) / 60) - 0.25);
+				new_start_time = parse_hour(new_start_time);
+				
+				var duration = ((getHourOrMinutes(event.data("end_time"),true) - getHourOrMinutes(event.data("start_time"), true)) * 60) + (getHourOrMinutes(event.data("end_time"),false) - getHourOrMinutes(event.data("start_time"), false));
+				duration = (duration < 0) ? duration * -1 : duration;
+				var partsDate = event.data("date").split(".");
+				var string_date = partsDate[2] + "-" + partsDate[1] + "-" + partsDate[0] + "T" + new_start_time[0] + ":" + new_start_time[1] + ":00";
+				var date_new_end_time = Date.parse(string_date);
+				var new_end_time = dateAdd(date_new_end_time, 'minute', duration);
+				console.log("new_start_time " + new_start_time + " new_end_time " + new_end_time + " duration " + duration + " " + (duration % 60) + " end "); 
+				new_end_time = new_end_time.toLocaleTimeString();
+				new_end_time = new_end_time.substring(0, 5);
+				var start_hour = new_start_time[0];
+				new_start_time = start_hour + ":" + new_start_time[1];
+				vueEvent.start_time = new_start_time;
+				vueEvent.end_time = new_end_time;
+				event.data("start_time", new_start_time);
+				event.data("end_time", new_end_time);
+
+				console.log("new_start_time " + new_start_time + " new_end_time " + new_end_time + " duration " + duration + " " + (duration % 60) + " end "); 
+			};
+			console.log("dropped!");
+		}
+
+		
+
+		/**
+		 *
+		 * parses a javascript object representation of .event 
+ 		 *
+		 * @param event
+		 *
+		 */
+		function parseEventData(event) {
+			var event_id = event.data("id");
+			var event_date = event.data("date");
+			var event_start_time = event.data("start_time");
+			var event_end_time = event.data("end_time");
+			var event_room = event.data("room");
+			var event_users = event.data("users");
+			var event_lead = event.data("lead");
+			var event_category = event.data("category");
+			var event_event_group = event.data("event_group");
 			event_date = event_date.split(".");
 			event_date = event_date[2] + "-" + event_date[1] + "-" + event_date[0];
-			console.log("event_date " + event_date);
-
-			event_obj.css("left", newX );
-			event_obj.css("top", shouldY);
-			//05.05.2017
-			//'2006-10-25 14:30'
 			var data = { 
 				"id" : parseInt(event_id),
 				"name" : "Lauber Mathe ",
-				"date" : event_date + " " + new_start_time,
-				"start_time" : event_date + " " + new_start_time,
-				"end_time" : event_date + " "  + event_end_time,
-				"room" : newRoom,
+				"date" : event_date + " " + event_start_time,
+				"start_time" : event_date + " " + event_start_time,
+				"end_time" : event_date + " "  + event_end_time, // TODO calculate correct new_end_time
+				"room" : event_room,
 				"users" : [1],
 				"lead" : parseInt(event_lead),
 				"category" : parseInt(event_category),
 				"event_group": null
 			};
 
-			AJAX.post("/api/event/" + event_id + "/", JSON.stringify(data), null);
-		}
-		console.log("making " + $(".event").length + " events draggable");
+			return data;
+		};
+
+
 		$(".event").draggable({
 			containment : "#time-raster",
 			cursor : "move",
 			snap : "#time-raster td.row",
 			stop: handleDragStop
 		});
+
 		events.mouseenter(function() {
 			var event = $(this);
 			var hidden_data = event.find(".hidden-data");
@@ -399,27 +463,31 @@ var Calendar_Model = (function(_this, $) {
 				$(".hidden-data").addClass("hidden");
 				hidden_data.removeClass("hidden");
 			}
-			else{
-
-			}
 		}).mouseleave(function() {
 			$(".hidden-data").addClass("hidden");
 		});
 
-		console.log("RESETED LISTENDER!",$("#app .event"));
+		console.log("RESETED LISTENDER!",$(".event"));
 	}
+
+
 
 	var parse_hour = function(timeHour) {
 			timeHour = timeHour.split(".");
 			var hours = timeHour[0];
 			hours = ((hours<9) ? "0" + hours : hours);
 			var minutes = timeHour[1];
-			if (minutes != null && minutes > 5) {
+			if (minutes != null && minutes > 4) {
 				minutes = (minutes * 0.6);
-				minutes = ((minutes<9) ? "0" + minutes : minutes);
-			} else {
+				minutes = ((minutes<9) ?  minutes + "0" : minutes);
+			}
+			else {
 				minutes = "00";
 			}
+			
+			hours = ((hours<9) ? "0" + hours : hours);
+
+			console.log("parsing " + timeHour + " to " + hours + ":" + minutes);
 
 			return [hours, minutes];
 	};
@@ -430,6 +498,7 @@ var Calendar_Model = (function(_this, $) {
 	**/
 	_this.render_events = function() {
 		$("#cal-message").html("");
+
 		WIDTH_OF_ROW = Math.round(NBR_OF_COLS > 0) ? 100 / NBR_OF_COLS : 140;
 
 		// TODO better solution
@@ -438,12 +507,13 @@ var Calendar_Model = (function(_this, $) {
 		}
 
 		events = $(".event");	
-		console.log("setting xy for ", events);
+
 		$.each(events, function(key, event) {
 			event = $(event);
 			var height = getHeight(event);
 			var x = calc_x(event);
 			var y = calc_y(event);
+
 			checkForAlert(event);
 
 			event.css({
@@ -461,6 +531,7 @@ var Calendar_Model = (function(_this, $) {
 		var start_time = event.data("start_time");
 		var end_time = event.data("end_time");
 		var value = start_time + end_time + "R" + room;
+		
 
 		if ($.inArray(value, alert_event_list) > -1) {
 			event.addClass("alert");

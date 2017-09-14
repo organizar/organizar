@@ -1,7 +1,7 @@
 {% load i18n %}
 {% include "base/header_small.html" %}
 
-<body id="placeholder"">
+<body id="placeholder">
 	<div id="loading"><div class="wrapper"><span class="text">Loading UI...<br/>Loading Data...</span></div></div>
 {% if info %}
 	<h1>{{ info }}</h1>
@@ -111,7 +111,7 @@
 			<div class="visible-data">
 				<h5 class="time">[[ event.start_time ]] bis [[ event.end_time ]]</h5>
 				<br/>
-				<span><b>Kategorie:</b> [[ event.category ]]<br/>
+				<span><b>Kategorie:</b> [[ event.category ]] id '[[ event.id ]]'<br/>
 				<b>Ort:</b>  [[ event.room ]]</span><br/>
 				<span class="lead"><h4>[[ event.lead ]]</h4></span>
 				<b>Teilnehmer</b><br/>
@@ -119,37 +119,67 @@
 			</div>
 			<div class="hidden-data hidden  category_small ">
 				<div class="data clear">
-						<div class="menu" v-if="event.user_is_superuser">
-							<a class="button ajax" data-divclassorid="#content" href="/event/ id /edit/"><img src="/media/img/edit.png" alt="edit"/></a>
+						<div class="menu  clearfix" v-if="event.user_is_superuser">
+							<a class="button save" :data-uri="'/api/event/' + [[ event.id ]] + '/'" data-divclassorid="#content"><img src="/media/img/save_w.svg" alt="save"/></a>
+							<a class="button " :href="' ' + [[ event.id ]] + '/'" data-divclassorid="#content"><img src="/media/img/person.png" alt="Person hinzufügen"/></a>
+							<a class="button " :href="' ' + [[ event.id ]] + '/'" data-divclassorid="#content"><img src="/media/img/file.svg" alt="Datei hinzufügen"/></a>
+							<!-- <a class="button ajax" :href="'/event/' + [[ event.id ]] + '/edit/'" data-divclassorid="#content"><img src="/media/img/edit.png" alt="edit"/></a>-->
 							<a class="button ajax delete" href="/event/event.id/delete/"><img src="/media/img/delete.png" alt="delete"/></a>
-							<a class="button clear ajax" data-divclassorid="#content" href="edit/group/ event_group /event.id/">Serie <img src="/media/img/edit.png" alt="edit"/></a>
-							<a class="button delete ajax" href="delete/group/event.event_group/">Serie <img src="/media/img/delete.png" alt="delete"/></a>
+							<!--<a class="button clear ajax" data-divclassorid="#content" href="edit/group/ event_group /event.id/">Serie <img src="/media/img/edit.png" alt="edit"/></a>
+							--><a class="button delete ajax" href="delete/group/event.event_group/">Serie <img src="/media/img/delete.png" alt="delete"/></a> 
 						</div>
-					<h4 class="time" style="color: black;">[[ event.start_time ]] bis [[ event.end_time ]]</h4><h5> [[ event.date ]] </h5>
-					<span><b>Leitung:</b> [[ event.lead ]]
-					<a v-if="event.user_is_superuser" class="button ajax show_in_overlay" data-divclassorid="#content" href="/person/edit/[ lead_id ]]/">
-						<img src="/media/img/edit.png" alt="edit"/>
-					</a>
-					<br/>
-					<b>Kategorie:</b> [[ event.category ]]<br/><b>Ort:</b> [[ event.room ]]
-					<br/>
-					<b>Datei Upload</b> <input type="file"></input>
-					<ul class="users" >
-							<li v-for="user in event.user_list">
-								<span v-if="event.user_is_superuser" class="user-data">[[ user.user_name ]] <br/> [[ user.user_phone ]] [[ user.user_mobile ]]</span>
-									<a class="button ajax show_in_overlay" data-divclassorid="#content" v-bind:href="'/person/edit/' + event.user_id + '/'">
-										<img src="/media/img/edit.png" alt="edit"/>
+						<div class="form-field">
+							<label>Titel: [[ event.name ]]</label><input v-model="event.name" type="text" :value="event.name" :placeholder="event.name" />
+						</div>	
+						<div class="form-field">
+							<label>Ort: [[ event.room ]] </label>
+						</div>
+						<div class="form-field">
+							<label>Kategorie: [[ event.category ]]</label><input v-model="event.category" type="text" :value="event.category" :placeholder="event.category" />
+						</div>
+						<div class="form-field">
+							<label>Start Zeit: [[ event.start_time  ]]</label><input v-model="event.start_time" type="text" :value="event.start_time" :placeholder="event.start_time" class="datepicker"/>
+						</div>
+						<div class="form-field">
+							<label>End Zeit: [[ event.end_time ]]</label><input v-model="event.end_time" type="text" :value="event.end_time" :placeholder="event.end_time" />
+						</div>
+						<div class="form-field">
+							<label>Wiederholung:</label>
+						</div>
+
+						<!--<h4 class="time" style="color: black;">[[ event.start_time ]] bis [[ event.end_time ]]</h4>
+						<h5> [[ event.date ]] </h5>
+						<b>Leitung:</b>
+						
+						<a v-if="event.user_is_superuser" class="button ajax show_in_overlay" data-divclassorid="#content" href="/person/edit/event.lead_id/">
+							<img src="/media/img/edit.png" alt="edit"/>
+						</a>
+						<br/>
+						<b>Kategorie:</b>  <input v-model="event.category" type="text" :value="event.category" :placeholder="event.category" /> [[ event.category ]]<br/><b>Ort:</b> [[ event.room ]]
+	-->				<div class="form-field">
+						<label>Leitung: [[ event.lead ]]</label><input v-model="event.lead" type="text" :value="event.lead" :placeholder="event.lead" />
+					</div>					
+					<div class="form-field">
+						<b>Datei Upload</b> <input type="file" />
+						
+						<ul class="users" >
+								<li v-for="user in event.user_list">
+									<span v-if="event.user_is_superuser" class="user-data">[[ user.user_name ]] <!-- <br/>[[ user.user_phone ]] [[ user.user_mobile ]]--></span>
+										<a class="button ajax show_in_overlay" data-divclassorid="#content" v-bind:href="'/person/edit/' + [[ user.id ]] + '/'">
+											<img src="/media/img/edit.png" alt="edit"/>
+										</a>
+									<a class="button ajax comment]]active[comment]] comment ajax show_in_overlay" data-divclassorid="#content" href="/add_user_comment/[ id ]]/[ user_id ]]/">
+										<img src="/media/img/comment.png" alt="edit"/>
+										<div class="hidden-comment hidden">[[ event.comment ]]</div>
 									</a>
-								<a class="button ajax comment]]active[comment]] comment ajax show_in_overlay" data-divclassorid="#content" href="/add_user_comment/[ id ]]/[ user_id ]]/">
-									<img src="/media/img/comment.png" alt="edit"/>
-									<div class="hidden-comment hidden">[[ event.comment ]]</div>
-								</a>
-								<a v-if="event.user_is_superuser" class="button participating comment [person_not_excused]]not-excused[person_not_excused]] [person_absent]] active absent[person_absent]]" data-comment="[ person_not_excused_comment ]]" href="/user_not_participating/[ id ]/[ user_id ]]/">
-									<img src="/media/img/not-participating.png" alt="abwesend"/>
-									<div class="hidden-comment hidden">[[ event.person_not_excused_comment ]]</div>
-								</a>
-							</li>
-					</ul>
+									<a v-if="event.user_is_superuser" class="button participating comment [person_not_excused]]not-excused[person_not_excused]] [person_absent]] active absent[person_absent]]" data-comment="[ person_not_excused_comment ]]" href="/user_not_participating/[ id ]/[ user_id ]]/">
+										<img src="/media/img/not-participating.png" alt="abwesend"/>
+										<div class="hidden-comment hidden">[[ event.person_not_excused_comment ]]</div>
+									</a>
+								</li>
+						</ul>
+
+					</div>
 				</div>
 			</div> 
 		</li>
@@ -170,8 +200,17 @@
 -->
 </div>
 
+
+<div class="ui-widget" style="position: fixed; top: 20%; left:0%; width: 300px; height: 200px; z-index: 99999; background: white;">
+  <label for="tags">Tags: </label>
+  <input id="tags">
+</div>
+
+
+
+
 	<script type="text/javascript" src="/media/js/lib/jquery-1.8.2.min.js"></script>
-	<script type="text/javascript" src="/media/js/lib/jquery-ui-1.10.2.custom.min.js"></script>
+	<script type="text/javascript" src="/media/js/lib/jquery-ui-1.12.js"></script>
 	<script type="text/javascript" src="/media/js/lib/mustache.js"></script>
 	<script type="text/javascript" src="/media/js/lib/jquery.cookie.js"></script>
 	<script type="text/javascript" src="/media/js/lib/pace.js"></script>
@@ -200,7 +239,7 @@
 	<script src="/media/js/overlay/modernizr.custom.js"></script>
 	<script src="/media/js/overlay/classie.js"></script>
 	<script src="/media/js/overlay/demo9.js"></script>
-
+ 
 	<script>	
 		var ALL_EVENTS = null; /*{% if json_events %}{% autoescape off %}{{ json_events }}{% endautoescape %}{% else %}null{% endif %};*/
 		var csrf_token = "{{csrf_token}}";
@@ -332,7 +371,40 @@
 			dateField.mask("99.99.9999", {reverse: true});
 			dateStr = Date_Util.dateToYMD(temp);
 			dateField.attr("value",dateStr);
-		}
+		};
+$(document).ready(function() {
+  $( function() {
+    var availableTags = [
+      "ActionScript",
+      "AppleScript",
+      "Asp",
+      "BASIC",
+      "C",
+      "C++",
+      "Clojure",
+      "COBOL",
+      "ColdFusion",
+      "Erlang",
+      "Fortran",
+      "Groovy",
+      "Haskell",
+      "Java",
+      "JavaScript",
+      "Lisp",
+      "Perl",
+      "PHP",
+      "Python",
+      "Ruby",
+      "Scala",
+      "Scheme"
+    ];
+    $( "#tags" ).autocomplete({
+      source: availableTags
+    });
+	console.log("setted tags!");
+  } );
+ });
+
 	</script>
 
 </body>
