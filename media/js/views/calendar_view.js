@@ -139,7 +139,7 @@ var Calendar_View = (function(_this, $) {
 		var target = $("#events");
 		var offset = timeRaster.offset().top;
 
-		events.dblclick(function(e) {
+		//events.dblclick(function(e) {
 //			var clickedEvent = $(this);
 //			var eventID = clickedEvent.data("id");
 //			console.log("--- clicked ---");
@@ -186,7 +186,7 @@ var Calendar_View = (function(_this, $) {
 //				});
 //				_this.handleForm();
 //			});
-		});
+		//});
 
 		timeRaster.dblclick(function(e) {
 			var height = 58;

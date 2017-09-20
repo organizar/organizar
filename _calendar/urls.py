@@ -71,8 +71,9 @@ urlpatterns = patterns( '',
 	url( r'^hours/(?P<user_id>.*)/(?P<from_date>.*)/(?P<to_date>.*)/$', views.print_hours, name = "hours_all" ),
 	url( r'^api/events/$', views.all_events, name = "all_events" ),
 	url( r'^api/events/(?P<from_date>.*)/(?P<to_date>.*)/$', views.all_events, name = "from_to_events" ),
-	url( r'^api/event/(?P<id>.*)/$', views.edit_event, name = "from_to_events" ),
-	
-	
+	url( r'^api/event/(?P<id>.*)/$', views.crud_event, name = "crud_event" ),
+	url( r'^api/users/$', views.all_users, name = "all_users" ),
+	url( r'^api/users/(?P<from_date>.*)/(?P<to_date>.*)/$', views.all_users, name = "from_to_users" ),
+	url( r'^api/user/(?P<id>.*)/$', views.crud_user, name = "crud_user" ),
 	# url(r'^handle/event/?$', ui.EventCRUDView.as_view(), name='event_crud_view'),
  ) 

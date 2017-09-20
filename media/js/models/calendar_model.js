@@ -96,13 +96,18 @@ $(document).ready(function() {
 			synchronze_event: function(event, vue_event) {
 				Vue.nextTick(() =>{
 					event = $(event);
-					console.log("vue is saving r00m " + event.data("end_time") + " vs " + vue_event["end_time"], event.data("id"));
+					if (vue_event != null) 
+						console.log("vue is saving r00m " + event.data("end_time") + " vs " + vue_event["end_time"], event.data("id"));
 				});
+			},
+			save : function() {
+				console.log("VUE events : " + this.events);
 			}
 		},
 		mounted: function () {
 				Calendar_Model.set_callback(this.set_events);
 				Calendar_Model.print(new Date("2017-5-5"));
+				Calendar_Model.load_users();
 			},
 		delimiters: ['[[',']]'],
 		watch: {
@@ -147,7 +152,7 @@ var Calendar_Model = (function(_this, $) {
 	var callback = null;
 	var alert_event_list = [];
 	var WIDTH_OF_ROW = null; // TODO make own calendar/timeraster object
-	var NBR_OF_COLS; // TODO make own calendar/timeraster object
+	var NBR_OF_COLS = 11; // TODO make own calendar/timeraster object
 
 	_this.set_callback = function(method) {
 		callback = method;
@@ -223,7 +228,23 @@ var Calendar_Model = (function(_this, $) {
 			}
 		});
 
-		
+		var dbTimestamp = null;
+		$(".event").dblclick(function(event) {
+			console.log(events,event);
+			console.log("clicked! " + dbTimestamp + " vs " + event.timeStamp + " nbrOfEvents " + events.length, $(this).find(".hidden-data"));
+			var hidden_data = $(this).find(".hidden-data");
+			console.log("hidden_data " + hidden_data.is(':visible'), hidden_data);
+			if (dbTimestamp != event.timeStamp) {
+				if (hidden_data.is(':visible')) {
+					hidden_data.hide();
+				}
+				else {
+					hidden_data.removeClass("hidden");
+					hidden_data.show();	
+				}
+			}
+			dbTimestamp = event.timeStamp;
+		});
 		NBR_OF_COLS = $("#time-raster").find("tr").last().find("td").size();
 		
 		console.log("Calendar_Model initialized");
@@ -275,6 +296,7 @@ var Calendar_Model = (function(_this, $) {
 
 	function setup_listener(vue_events) {
 		events = $(".event");
+		console.log("events! " + events.length);
 		// setup selectors
 		action_go_to_next_week = $("#next-week");
 		action_go_to_pre_week = $("#prev-week");
@@ -308,38 +330,44 @@ var Calendar_Model = (function(_this, $) {
 			_this.print(active_day);
 		});
 
+
+		function my_callback() {
+			console.log("it really worked!");	
+			var new_event = $(".event .hidden-data:visible");
+			console.log("new_event " + new_event.parent().data("end_time"), new_event.parent());
+			
+		};
 		$(".event .button.save").click(function() {
 			console.log($(this));
 			var uri = $(this).data("uri");
 			console.log("Uri: " + uri);
+			var jEvent = this.parentElement.parentElement.parentElement.parentElement;
+			var end_time = jEvent.getAttribute('data-end_time');
+			console.log("end_time " + end_time);
 			var event = $(this).parent().parent().parent().parent();
-			console.log("event ", event.data("end_time"));
-			var data = parseEventData(event);
+			 event.data("end_time", end_time);
+			console.log("event " + event.data("end_time"), event);
+			var data = parseEventData(jEvent);
 			console.log("data = ", data);
-			AJAX.post(uri, JSON.stringify(data), null);
+			var new_event = $(".event .hidden-data:visible");
+			console.log("new_event " + new_event.parent().data("end_time"), new_event);
+			app.save();
+			AJAX.post(uri, JSON.stringify(data), my_callback);
 		});
 
-		action_show_date.click(function() {
+		/*action_show_date.click(function() {
 			var string_date = $("#cal-go-to-date").val();
 			string_date = string_date.split(".");
 			string_date = string_date[2] + "-" + string_date[1] + "-" + string_date[0];
 			var wanted_date = new Date(string_date);
 			active_day = wanted_date;
 			reset();
-		});
+		});*/
 
 		$(".button.delete").click(function(e) {
 
 		});
-		$(".event").dblclick(function() {
-			var event = $(this).find(".hidden-data");
-			if (event.is(':visible')) {
-				event.hide();
-			}
-			else {
-				event.show();
-			}
-		});
+
 
 		function handleDragStop( drpEvent, event ) {
 			console.log("vue events ", vue_events);
@@ -353,18 +381,19 @@ var Calendar_Model = (function(_this, $) {
 			var nbrOfQA = Math.round(y / event_height);
 			var vue_event = null;
 			var event_id = event_obj.data("id");
-
-			$.each(vue_events, function() {
-				if(this["id"] == event_id) {
-					vue_event = this;
-					return false;
-				}
-			});
+			if (vue_events != null) {
+				$.each(vue_events, function() {
+					if(this["id"] == event_id) {
+						vue_event = this;
+						return false;
+					}
+				});
+			}
 
 			setXAndY(event_obj, vue_event);
 			setNewStartAndEndTime(event_obj,vue_event);
 			app.synchronze_event(event_obj, vue_event);
-			var data = parseEventData(event_obj);
+			var data = parseEventData(drpEvent.target);
 			AJAX.post("/api/event/" + event_obj.data("id") + "/", JSON.stringify(data), null);
 
 			function setXAndY(event, vueEvent) {
@@ -379,8 +408,9 @@ var Calendar_Model = (function(_this, $) {
 				newRoom = ((newRoom == 0) ? 1 : newRoom);
 				var newX = event_width * newRoom;
 				var shouldY = (nbrOfQA*event_height) - 2;
-		
+				if (vueEvent != null) {
 				vueEvent.room = newRoom;
+				}
 				event.data("room", newRoom);
 				event.css("left", newX );	
 				event.css("top", shouldY);
@@ -401,8 +431,10 @@ var Calendar_Model = (function(_this, $) {
 				new_end_time = new_end_time.substring(0, 5);
 				var start_hour = new_start_time[0];
 				new_start_time = start_hour + ":" + new_start_time[1];
+				if (vueEvent != null) {
 				vueEvent.start_time = new_start_time;
 				vueEvent.end_time = new_end_time;
+				}
 				event.data("start_time", new_start_time);
 				event.data("end_time", new_end_time);
 
@@ -421,15 +453,15 @@ var Calendar_Model = (function(_this, $) {
 		 *
 		 */
 		function parseEventData(event) {
-			var event_id = event.data("id");
-			var event_date = event.data("date");
-			var event_start_time = event.data("start_time");
-			var event_end_time = event.data("end_time");
-			var event_room = event.data("room");
-			var event_users = event.data("users");
-			var event_lead = event.data("lead");
-			var event_category = event.data("category");
-			var event_event_group = event.data("event_group");
+			var event_id = event.getAttribute("data-id");
+			var event_date = event.getAttribute("data-date");
+			var event_start_time = event.getAttribute("data-start_time");
+			var event_end_time = event.getAttribute("data-end_time");
+			var event_room = event.getAttribute("data-room");
+			var event_users = event.getAttribute("data-users");
+			var event_lead = event.getAttribute("data-lead");
+			var event_category = event.getAttribute("data-category");
+			var event_event_group = event.getAttribute("data-event_group");
 			event_date = event_date.split(".");
 			event_date = event_date[2] + "-" + event_date[1] + "-" + event_date[0];
 			var data = { 
@@ -492,6 +524,13 @@ var Calendar_Model = (function(_this, $) {
 			return [hours, minutes];
 	};
 
+	_this.load_users = function() {
+		var loaded = function(data) {
+			console.log("loaded", data);
+		};
+		AJAX.get("http://localhost:8000/api/users/", null, loaded, null);
+	};
+
 	/**
 	 * sets the x, y, widht and height of a elment
          *
@@ -513,7 +552,6 @@ var Calendar_Model = (function(_this, $) {
 			var height = getHeight(event);
 			var x = calc_x(event);
 			var y = calc_y(event);
-
 			checkForAlert(event);
 
 			event.css({
@@ -716,6 +754,7 @@ var Calendar_Model = (function(_this, $) {
 
 	function calc_x(event) {
 		var room = event.data("room");
+		console.log("room " + room + " * width " + WIDTH_OF_ROW);
 		return room * WIDTH_OF_ROW;
 	}
 

@@ -54,6 +54,8 @@ from _calendar._views.ServeData import ServeDataView
 from _calendar.forms import LoginForm, Event_Form, Event_Serie_Form, Not_At_Event_Form, Event_Person_Comment_Form, Event_Group_Form
 from _calendar.models import Event, Room, Event_Group, Category, Event_Person_Comment, Not_At_Event_Person
 from _calendar._serializer.EventSerializer import EventSerializer
+from _user._serializer.UserSerializer import UserSerializer
+from _user._serializer.PersonSerializer import PersonSerializer
 from _todo.models import Todo
 from _user.models import Person, Billing_Contact
 from _utils.template_utils import set_session_var
@@ -742,6 +744,7 @@ def get_contracts_with_pdf( contracts ):
 
 	return contracts_array
 
+
 @login_required( login_url = '/' )
 def contract_list( request ):
 	contracts = None
@@ -768,14 +771,13 @@ def contract_list( request ):
 
 
 
-@api_view(['POST', 'GET'])
-def edit_event(request, id=None):
-	if (id == None):
-		return
+@api_view(['POST', 'GET', 'PUT', 'DELETE'])
+def crud_event(request, id=None):
+	print(id)
+	if (id==None):
+		print("Could not process event for id 'null'")
+		return Http404
 	event = Event.objects.get(id=id)
-	if request.method == 'GET':
-		serialized = EventSerializer(instance=event, many=False)
-	
 	if request.method == 'POST':
 		try:
 			event_data = request.data["data"]
@@ -791,7 +793,13 @@ def edit_event(request, id=None):
 		except:
 			print ( traceback.format_exc() )
 			print("error saving event"  + event.name)
+	else:
+		if (id == None):
+			return Http404
+		serialized = EventSerializer(instance=event, many=False)
+	
 	return JsonResponse(serialized.data, safe=False)
+
 
 @api_view(['POST', 'GET'])
 @parser_classes((JSONParser,))
@@ -810,6 +818,47 @@ def all_events(request, from_date=None, to_date=None):
 
     return JsonResponse(serializer.data, safe=False)
 
+
+@api_view(['POST', 'GET', 'PUT', 'DELETE'])
+def crud_user(request, id=None):
+	if (id == None):
+		return
+	event = User.objects.get(id=id)
+	person = Person.objects.get(user=id)
+	#if request.method == 'GET':
+	#serialized = EventSerializer(instance=event, many=False)
+	
+	if request.method == 'POST':
+		try:
+			event_data = request.data["data"]
+			json_event = json.loads(event_data)
+			serialized = EventSerializer(instance=event, data=json_event, many=False)
+			if(serialized.is_valid()):
+				serialized.save()
+				print("saved " + str(serialized.validated_data))
+			else:
+				print(serialized.errors)
+				print("not valid!" + str(event_data))
+
+		except:
+			print ( traceback.format_exc() )
+			print("error saving event"  + event.name)
+	return JsonResponse(serialized.data, safe=False)
+
+
+@api_view(['POST', 'GET'])
+@parser_classes((JSONParser,))
+def all_users(request):
+    """
+    List all code events, or create a new event.
+    """
+    users = User.objects.all()
+    persons = Person.objects.all()
+    serialized = UserSerializer(instance=users, many=True)    
+    serialized = PersonSerializer(instance=persons, many=True)
+    #serializer = EventSerializer(events, many=True)
+
+    return JsonResponse(serialized.data, safe=False)
 
 
 # @cache_page(60 * 15)

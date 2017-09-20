@@ -38,6 +38,7 @@ var AJAX = (function(_this, $) {
 
 		if(data === null){
 			console.log("WARN: request has no data!");
+			data = {};
 		} 
 		if(typeof data !== 'object') {
 			data = {data};

@@ -118,6 +118,7 @@
 						<span class="user-data" v-if="event.person_absent"><s><b>person_absent user_name ,person_absent</b></s>[[ event.person_absent ]]</span>
 			</div>
 			<div class="hidden-data hidden  category_small ">
+				<div class="background"></div>
 				<div class="data clear">
 						<div class="menu  clearfix" v-if="event.user_is_superuser">
 							<a class="button save" :data-uri="'/api/event/' + [[ event.id ]] + '/'" data-divclassorid="#content"><img src="/media/img/save_w.svg" alt="save"/></a>
@@ -202,7 +203,7 @@
 
 
 <div class="ui-widget" style="position: fixed; top: 20%; left:0%; width: 300px; height: 200px; z-index: 99999; background: white;">
-  <label for="tags">Tags: </label>
+  <label for="tags">users: </label>
   <input id="tags">
 </div>
 
@@ -372,9 +373,10 @@
 			dateStr = Date_Util.dateToYMD(temp);
 			dateField.attr("value",dateStr);
 		};
+ var availableTags = null;
 $(document).ready(function() {
   $( function() {
-    var availableTags = [
+    availableTags = [
       "ActionScript",
       "AppleScript",
       "Asp",
