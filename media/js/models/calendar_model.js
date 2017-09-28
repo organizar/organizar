@@ -64,10 +64,74 @@
 //
 //}]);
 //console.log("event_app ", event_app);
+var user_app = null;
+
 
 
 var app = null;
 $(document).ready(function() {
+	
+
+	user_app = new Vue({
+		el: '#user-app',
+		delimiters: ['[[',']]'],
+		data: {
+			users: []
+		},
+		methods: {
+			load_users: function(callback_org) {
+				var loaded = function(data) {
+					this.users = data;
+					console.log("this.users ", this.users);
+					var users = [];
+					for(var x = 0; x < data.length; x++) {
+						var user = data[x];
+						users.push(user.user.first_name + " " + user.user.last_name);
+					}
+					$( "#users" ).autocomplete({
+					      source: users
+					});
+					$( "#users" ).focus(function(event) {
+						$(event.target).val("");
+						console.log("focused! ", event);
+					});
+					if (callback_org !== "undefined" && callback_org != null) {
+						callback_org(data);
+					}
+				};
+				AJAX.get("http://localhost:8000/api/users/", null, loaded, null);
+			}
+		},
+		mounted: function () {
+			console.log("=================== USER MODEL MOUNTED! ===================");
+			var load_users = function(callback_org) {
+				var loaded = function(data) {
+					console.log("loaded", data);
+					var users = [];
+					for(var x = 0; x < data.length; x++) {
+						var user = data[x];
+						users.push(user.user.first_name + " " + user.user.last_name);
+					}
+					console.log("setting users to ", users);
+					$( "#users" ).autocomplete({
+					      source: users
+					});
+					$( "#users" ).focus(function(event) {
+						$(event.target).val("");
+						console.log("focused! ", event);
+					});
+					if (callback_org !== "undefined" && callback_org != null) {
+						callback_org(data);
+					}
+				};
+				AJAX.get("http://localhost:8000/api/users/", null, loaded, null);
+			};
+		}
+	});
+	
+	Vue.component('user-item', {
+		props: ['user'],
+	});
 
 	Vue.component('event-item', {
 		props: ['event'],
@@ -78,7 +142,7 @@ $(document).ready(function() {
 		data: {
 			message: 'Hello Vue.js!',
 			events: [],
-			users: [],
+			users: []
 		},
 		methods: {
 			set_events: function(events) {
@@ -88,16 +152,24 @@ $(document).ready(function() {
 					Calendar_Model.render_events();
 					Calendar_Model.reset(this.events);
 					$("#loading").hide();
+					function callback(data) {
+						console.log("Callback data ==> ", $.parseJSON(data));
+						this.users = $.parseJSON(data);					
+					}
+					user_app.load_users(callback);
 				});
 			},
 			reverseMessage: function() {
 				this.message = this.message.split('').reverse().join('');
 			},
-			synchronze_event: function(event, vue_event) {
+			synchronze_event: function(event, vue_event, callback) {
 				Vue.nextTick(() =>{
 					event = $(event);
 					if (vue_event != null) 
-						console.log("vue is saving r00m " + event.data("end_time") + " vs " + vue_event["end_time"], event.data("id"));
+						console.log("vue is saving r00m " + event.data("room") + " " + event.data("end_time") + " vs " + vue_event["end_time"], event.data("id"));
+						if (callback !== "undefined" && callback != null) {
+							callback();
+						}
 				});
 			},
 			save : function() {
@@ -107,7 +179,6 @@ $(document).ready(function() {
 		mounted: function () {
 				Calendar_Model.set_callback(this.set_events);
 				Calendar_Model.print(new Date("2017-5-5"));
-				Calendar_Model.load_users();
 			},
 		delimiters: ['[[',']]'],
 		watch: {
@@ -119,6 +190,11 @@ $(document).ready(function() {
 			message : function() {
 				Vue.nextTick(() =>{
 					console.log("Message CHANGED!", this.message);
+				});
+			},
+			users : function() {
+				Vue.nextTick(() =>{
+					console.log("Users CHANGED!", this.users);
 				});
 			}
 		}
@@ -195,9 +271,6 @@ var Calendar_Model = (function(_this, $) {
 		cal_date = $("#cal-date");
 		action_show_date = $("#cal-action-show-date");
 
-		// activate click listener
-		setup_listener();
-
 		printCalendar();
 		// show date
 
@@ -228,23 +301,6 @@ var Calendar_Model = (function(_this, $) {
 			}
 		});
 
-		var dbTimestamp = null;
-		$(".event").dblclick(function(event) {
-			console.log(events,event);
-			console.log("clicked! " + dbTimestamp + " vs " + event.timeStamp + " nbrOfEvents " + events.length, $(this).find(".hidden-data"));
-			var hidden_data = $(this).find(".hidden-data");
-			console.log("hidden_data " + hidden_data.is(':visible'), hidden_data);
-			if (dbTimestamp != event.timeStamp) {
-				if (hidden_data.is(':visible')) {
-					hidden_data.hide();
-				}
-				else {
-					hidden_data.removeClass("hidden");
-					hidden_data.show();	
-				}
-			}
-			dbTimestamp = event.timeStamp;
-		});
 		NBR_OF_COLS = $("#time-raster").find("tr").last().find("td").size();
 		
 		console.log("Calendar_Model initialized");
@@ -368,10 +424,27 @@ var Calendar_Model = (function(_this, $) {
 
 		});
 
+		var dbTimestamp = null;
+		
+		$(".event").dblclick(function(event) {
+			console.log(events,event);
+			console.log("clicked! " + dbTimestamp + " vs " + event.timeStamp + " nbrOfEvents " + events.length, $(this).find(".hidden-data"));
+			var hidden_data = $(this).find(".hidden-data");
+			console.log("hidden_data " + hidden_data.is(':visible'), hidden_data);
+			if (dbTimestamp != event.timeStamp) {
+				if (hidden_data.is(':visible')) {
+					hidden_data.hide();
+				}
+				else {
+					hidden_data.removeClass("hidden");
+					hidden_data.show();	
+				}
+			}
+			dbTimestamp = event.timeStamp;
+		});
 
 		function handleDragStop( drpEvent, event ) {
 			console.log("vue events ", vue_events);
-			
 			//05.05.2017
 			//'2006-10-25 14:30'
 			var event_obj = $(drpEvent.target);
@@ -389,12 +462,14 @@ var Calendar_Model = (function(_this, $) {
 					}
 				});
 			}
-
+			console.log("found vue_event => ", vue_event);
 			setXAndY(event_obj, vue_event);
 			setNewStartAndEndTime(event_obj,vue_event);
-			app.synchronze_event(event_obj, vue_event);
-			var data = parseEventData(drpEvent.target);
-			AJAX.post("/api/event/" + event_obj.data("id") + "/", JSON.stringify(data), null);
+			function callbackSync() {
+				var data = parseEventData(event_obj);
+				AJAX.post("/api/event/" + event_obj.data("id") + "/", JSON.stringify(data), null);
+			}
+			app.synchronze_event(event_obj, vue_event, callbackSync);
 
 			function setXAndY(event, vueEvent) {
 				var cols = 10;
@@ -409,7 +484,7 @@ var Calendar_Model = (function(_this, $) {
 				var newX = event_width * newRoom;
 				var shouldY = (nbrOfQA*event_height) - 2;
 				if (vueEvent != null) {
-				vueEvent.room = newRoom;
+					vueEvent.room = newRoom;
 				}
 				event.data("room", newRoom);
 				event.css("left", newX );	
@@ -426,7 +501,7 @@ var Calendar_Model = (function(_this, $) {
 				var string_date = partsDate[2] + "-" + partsDate[1] + "-" + partsDate[0] + "T" + new_start_time[0] + ":" + new_start_time[1] + ":00";
 				var date_new_end_time = Date.parse(string_date);
 				var new_end_time = dateAdd(date_new_end_time, 'minute', duration);
-				console.log("new_start_time " + new_start_time + " new_end_time " + new_end_time + " duration " + duration + " " + (duration % 60) + " end "); 
+				//console.log("new_start_time " + new_start_time + " new_end_time " + new_end_time + " duration " + duration + " " + (duration % 60) + " end "); 
 				new_end_time = new_end_time.toLocaleTimeString();
 				new_end_time = new_end_time.substring(0, 5);
 				var start_hour = new_start_time[0];
@@ -438,9 +513,9 @@ var Calendar_Model = (function(_this, $) {
 				event.data("start_time", new_start_time);
 				event.data("end_time", new_end_time);
 
-				console.log("new_start_time " + new_start_time + " new_end_time " + new_end_time + " duration " + duration + " " + (duration % 60) + " end "); 
+				//console.log("new_start_time " + new_start_time + " new_end_time " + new_end_time + " duration " + duration + " " + (duration % 60) + " end "); 
 			};
-			console.log("dropped!");
+			//console.log("dropped!");
 		}
 
 		
@@ -453,15 +528,15 @@ var Calendar_Model = (function(_this, $) {
 		 *
 		 */
 		function parseEventData(event) {
-			var event_id = event.getAttribute("data-id");
-			var event_date = event.getAttribute("data-date");
-			var event_start_time = event.getAttribute("data-start_time");
-			var event_end_time = event.getAttribute("data-end_time");
-			var event_room = event.getAttribute("data-room");
-			var event_users = event.getAttribute("data-users");
-			var event_lead = event.getAttribute("data-lead");
-			var event_category = event.getAttribute("data-category");
-			var event_event_group = event.getAttribute("data-event_group");
+			var event_id = event.data("id");
+			var event_date = event.data("date");
+			var event_start_time = event.data("start_time");
+			var event_end_time = event.data("end_time");
+			var event_room = event.data("room");
+			var event_users = event.data("users");
+			var event_lead = event.data("lead");
+			var event_category = event.data("category");
+			var event_event_group = event.data("event_group");
 			event_date = event_date.split(".");
 			event_date = event_date[2] + "-" + event_date[1] + "-" + event_date[0];
 			var data = { 
@@ -519,17 +594,12 @@ var Calendar_Model = (function(_this, $) {
 			
 			hours = ((hours<9) ? "0" + hours : hours);
 
-			console.log("parsing " + timeHour + " to " + hours + ":" + minutes);
+			//console.log("parsing " + timeHour + " to " + hours + ":" + minutes);
 
 			return [hours, minutes];
 	};
 
-	_this.load_users = function() {
-		var loaded = function(data) {
-			console.log("loaded", data);
-		};
-		AJAX.get("http://localhost:8000/api/users/", null, loaded, null);
-	};
+
 
 	/**
 	 * sets the x, y, widht and height of a elment
@@ -754,7 +824,6 @@ var Calendar_Model = (function(_this, $) {
 
 	function calc_x(event) {
 		var room = event.data("room");
-		console.log("room " + room + " * width " + WIDTH_OF_ROW);
 		return room * WIDTH_OF_ROW;
 	}
 

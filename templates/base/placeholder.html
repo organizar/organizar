@@ -2,7 +2,22 @@
 {% include "base/header_small.html" %}
 
 <body id="placeholder">
-	<div id="loading"><div class="wrapper"><span class="text">Loading UI...<br/>Loading Data...</span></div></div>
+	
+	<div id="loading"><div class="wrapper"><div class="text-wrapper"><h2>Organizar</h2><div class="text">Loading UI...<br/>Loading Data...</div></div>
+	<div class='solar-syst'>
+		<div class='sun'></div>
+  <div class='mercury'></div>
+  <div class='venus'></div>
+  <div class='earth'></div>
+  <div class='mars'></div>
+  <div class='jupiter'></div>
+  <div class='saturn'></div>
+  <div class='uranus'></div>
+  <div class='neptune'></div>
+  <div class='pluto'></div>
+  <div class='asteroids-belt'></div>
+	</div></div></div>
+
 {% if info %}
 	<h1>{{ info }}</h1>
 {% endif%}
@@ -15,39 +30,29 @@
 	</div>
 {% endif%}
 
+{% include "base/menu.html" %}
 <!--
-{% if form_type %}
-	<div style="margin: 0 0 70px 0">
-		<a href="/" class="button back">{% trans "back" %}</a>
-	</div>
-	{% if form_type == "event" %}
-		{% include "base/forms/event.html" %}
-	{% elif form_type == "person" %}
-		{% include "base/forms/person.html" %}
-	{% elif form_type == "contract" %}
-		{% include "base/forms/contract.html" %}
-	{% elif form_type == "event_group" %}
-		{% include "base/forms/event_group.html" %}
-	{% elif form_type == "edit_group" %}
-		{% include "base/forms/edit_group.html" %}
-	{% elif form_type == "standard_form" %}
-		{% include "base/forms/standard_form.html" %}
-	{% elif form_type == "todo" %}
-		{% include "base/forms/todo.html" %}
-	{% endif %}
-{% elif form_second and form_action %}
-	<div>
-		<form action="{{ form_action }}" method="post">
-			{% csrf_token %}
-			{{ form_second.as_p }}
-			<input class="button" type="submit" value="{% trans 'save' %}"/>
-		</form>
-	</div>
-{% else %}
+		id	2
+user	
+id	26
+first_name	"Phillip"
+last_name	"Bayer"
+email	"keine@e-mail.de"
+is_active	true
+is_superuser	false
+groups	[1]
+user_permissions	[]
+last_login	"2013-12-10T12:10:46"
+birthday	"1999-11-09"
+street	"In den Kappelmatten"
+hnr	"12"
+zip	79618
+city	"Rheinfelden"
+country	""
+phone	"61069"
+mobile	""
+accessibility	""
 -->
-
-		{% include "base/menu.html" %}
-
 	<section id="page">
 		<div id="cal-message"></div>
 		<div id="time-raster"></div>
@@ -60,13 +65,12 @@
 			<div id="overlay-info"></div>
 		</div>
 	</div>
-<!--{% endif %}-->
 		<div class="overlay overlay-cornershape" data-path-to="m 0,0 1439.999975,0 0,805.99999 -1439.999975,0 z">
 			<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 1440 806" preserveAspectRatio="none">
 				<path class="overlay-path" d="m 0,0 -1439.999975,0 0,-805.99999 0,805.99999 z"/>
 			</svg>
 			<button type="button" class="overlay-close">{% trans "close" %}</button>
-		<div id="menu" class="menu">	<nav>
+			<div id="menu" class="menu">	<nav>
 
 				<ul class="entries">
 					{% if request.user.is_superuser %}
@@ -90,6 +94,18 @@
 			
 			</nav></div>
 		</div>
+
+<div id="user-app">
+	<user-item inline-template
+		v-for="user in users"
+		v-bind:user="user"
+		v-bind:key="user.id"
+	>
+		<div class="user"
+			:data-id="user.id" 
+		></div>
+	</user-item>
+</div>
 
 <div id="app" >
 	<event-item inline-template
@@ -185,26 +201,12 @@
 			</div> 
 		</li>
 	    </event-item>
-<!--
-	<div style="position: fixed; left: 50%; top: 20%;">
-	<ol>
 
-	</ol>
-	 <ol> <li v-for="event in events">
-	   1   [[ event.text ]]
-	  </li></ol>
-	  <p> [[ message ]]</p>
-	  <button v-on:click="reverseMessage">Reverse Message</button>
-	  <p> [[ message ]]</p>
-	  <input v-model="message">
-	</div>
--->
 </div>
 
 
-<div class="ui-widget" style="position: fixed; top: 20%; left:0%; width: 300px; height: 200px; z-index: 99999; background: white;">
-  <label for="tags">users: </label>
-  <input id="tags">
+<div class="ui-widget" style="position: fixed; top: 0%; left:13%; width: 300px; height: 65px; z-index: 99999;">
+  <input id="users" placeholder="Benutzer" style="border: none;">
 </div>
 
 
@@ -249,134 +251,7 @@
 
 	<script>
 
-
-
-		function handle_contract() {
-			var add_user_buttons = $("#add-new-contact, #add-new-billing-contact");
-
-			add_user_buttons.click(function() {
-				var button = $(this);
-				var wrapper = $(this).parent();
-
-				button.addClass("hidden");
-				wrapper.find(".new-user-form").removeClass("hidden");
-				wrapper.find(".user-search").addClass("hidden");
-
-				wrapper.find(".back").click(function() {
-					button.removeClass("hidden");
-					wrapper.find(".new-user-form").addClass("hidden");
-					wrapper.find(".user-search").removeClass("hidden");
-				});
-			});
-		
-			// show contract id if existing
-			var contract_id_field = $("#id_number");
-			var contract_id = contract_id_field.val();
-			if (typeof contract_id != "undefined" && contract_id != "") {
-				contract_id_field.parent().prepend(contract_id);
-			}
-			
-			
-			// show and set billing contact if recently created
-// 			var user_id = $("#id_id").attr("value");
-// 			if (typeof user_id != "undefined" && user_id != "") {
-// 				var select_options = $("#id_billing_contact").find("option");
-// 				select_options.attr('selected', false);
-// 				$.each(select_options, function(key, option) {
-// 					var option = $(option);
-// 					var value = option.val();
-// 					if (value == user_id) {
-// 						var wrapper = option.parent().parent();
-// 						option.attr('selected', true);
-// 						//wrapper.css("display", "block");
-// 						//wrapper.html("<div class=\"hidden\">" + wrapper.html() + "</div>");
-// 						//wrapper.prepend("<label>Rechnungsadresse:</label><input type=\"text\" value=\"" + option.text() + "\"readonly=\"readonly\"/>");
-
-// 						return false;
-// 					}
-// 				});
-// 			}
-		
-			var selected_billing_options = $("#id_billing_contact").find("option:selected");
-			show_select_option(selected_billing_options, null, "Vertragspartner", 'id_billing_contact');
-
-			// show contact if set 
-			var selected_options = $("#id_contact").find("option:selected");
-			show_select_option(selected_options, null, "Schüler", 'id_contact');
-
-			function show_select_option(selected_options, value, label, id) {
-				$.each(selected_options, function(key, option) {
-					var option = $(option);
-					var wrapper = option.parent().parent();
-					var text = "";
-					var newID = "target_" + id
-					var errorDiv = wrapper.find(".error");
-
-					wrapper.css("display", "block");
-					wrapper.html("<div class=\"hidden\">" + wrapper.html() + "</div>");
-
-					if (typeof value != "undefined" && value != null && value != "") {
-						text = value;
-					}
-					else {
-						if (option.text() != "---------") {
-							text = option.text();
-							$.cookie(id, text);
-						}
-					}
-					wrapper.prepend(errorDiv[0].outerHTML + "<label>" + label + ":</label><input id=\"" + newID + "\" type=\"text\" value=\"" + text + "\"readonly=\"readonly\"/>");
-				});
-			}
-		}
-
-		/**
-		 *
-		 * FUNCTION handlePrint
-		 *
-		 */
-		function handlePrint() {
-			var contract_type = $("#contract-type");
-
-			if (typeof contract_type != "undefined") {
-				var text = contract_type.text();
-				text = text.split(" - ")[0];
-				contract_type.text(text);
-			}
-
-			handlePagebreaks();
-
-			function handlePagebreaks() {
-				var events = $(".events");
-				$.each(events, function(key, event_list) {
-					var height = 0;
-					var event_list = $(event_list).find(".event");
-					$.each(event_list, function(key, event){
-						var event = $(event);
-						height = height + parseInt(event.height());
-						if (height > 700) {
-							event.prepend('<div class="new-page"></div>');
-							height = 0;
-						}
-					});
-				});
-			}
-
-			var d1 = new Date();
-			var d = d1.getDate();
-			var m = d1.getMonth() + 1;
-			var y = d1.getFullYear();
-			var dateField = Overlay.SELF.find("#date");
-			var temp = new Date();
-			var dateStr = "";
-			d1 = Date_Util.dateToYMD(d1);
-			dateField.mask("99.99.9999", {reverse: true});
-			dateStr = Date_Util.dateToYMD(temp);
-			dateField.attr("value",dateStr);
-		};
- var availableTags = null;
-$(document).ready(function() {
-  $( function() {
-    availableTags = [
+ var availableTags  = [
       "ActionScript",
       "AppleScript",
       "Asp",
@@ -400,12 +275,6 @@ $(document).ready(function() {
       "Scala",
       "Scheme"
     ];
-    $( "#tags" ).autocomplete({
-      source: availableTags
-    });
-	console.log("setted tags!");
-  } );
- });
 
 	</script>
 

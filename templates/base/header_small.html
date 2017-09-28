@@ -7,7 +7,7 @@
 	<meta charset="utf-8" />
 	
 	<title>ORGANIZAR</title>
-
+	
 	<style>
 		#loading {
 			position: fixed;
@@ -15,8 +15,7 @@
 			height: 100%;
 			top:0;
 			left: 0;
-			background: #007095;
-			color: white;
+			background: #17171a; /*#007095;*/
 			z-index: 99999999;
 		}
 		#loading .wrapper
@@ -26,16 +25,25 @@
 			padding-top: 20%;
 			width: 200px;
 			font-family: arial;
-			font-size: 20px;
 			font-weight: bold;
 			display: block;
 		}
-		#loading .text {
-		
+		#loading .text-wrapper {
+			margin-left: -27em;
+			margin-top:-33%;
+			color: white;
+		}
+		#loading .text-wrapper h2 {
+			padding-left: 0;
+			color: white;
+		}
+		#loading .text-wrapper .text {
+			font-size: 14px;
 		}
 	</style>
 
 	{% compress css %}
+	<link rel="stylesheet" type="text/css" href="/media/css/loading.css" />
 	<link rel="stylesheet" type="text/css" href="/media/css/normalize.css" />
 	<link rel="stylesheet" type="text/css" href="/media/css/foundation.min.css" />
 	<link rel="stylesheet" type="text/css" href="/media/css/core.css" />
